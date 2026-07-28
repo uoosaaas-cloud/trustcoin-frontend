@@ -56,12 +56,12 @@ export default function UserTradesPage() {
     <div className="page-shell">
       <AppNav />
       <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-500">{t("eyebrow")}</p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">{t("title")}</h1>
-        <p className="mt-2 max-w-2xl text-sm text-slate-500">{t("subtitle")}</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-300">{t("eyebrow")}</p>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-white">{t("title")}</h1>
+        <p className="mt-2 max-w-2xl text-sm text-slate-400">{t("subtitle")}</p>
 
         {errorMessage ? (
-          <p className="mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <p className="mt-6 rounded-xl border border-rose-400/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-300">
             {errorMessage}
           </p>
         ) : null}
@@ -69,7 +69,7 @@ export default function UserTradesPage() {
         <div className="table-surface mt-8">
           <table className="min-w-full text-sm">
             <thead>
-              <tr className="border-b border-slate-100 text-start text-xs uppercase tracking-wide text-slate-500">
+              <tr className="border-b border-white/10 text-start text-xs uppercase tracking-wide text-slate-400">
                 <th className="px-4 py-3 font-semibold">{t("columns.symbol")}</th>
                 <th className="px-4 py-3 font-semibold">{t("columns.side")}</th>
                 <th className="px-4 py-3 font-semibold">{t("columns.amount")}</th>
@@ -92,8 +92,8 @@ export default function UserTradesPage() {
                 </tr>
               ) : (
                 trades.map((trade) => (
-                  <tr key={trade.id} className="border-b border-slate-50 last:border-0">
-                    <td className="px-4 py-3.5 font-mono text-sm font-semibold tracking-wide text-slate-900">
+                  <tr key={trade.id} className="border-b border-white/5 last:border-0">
+                    <td className="px-4 py-3.5 font-mono text-sm font-semibold tracking-wide text-white">
                       {trade.symbol}
                     </td>
                     <td className="px-4 py-3.5">
@@ -101,13 +101,13 @@ export default function UserTradesPage() {
                         className={`rounded-lg px-2 py-0.5 text-xs font-bold uppercase ${
                           trade.side === "SELL"
                             ? "bg-red-50 text-red-600"
-                            : "bg-emerald-50 text-emerald-700"
+                            : "bg-emerald-50 text-emerald-300"
                         }`}
                       >
                         {sideLabel(trade.side)}
                       </span>
                     </td>
-                    <td className="px-4 py-3.5 font-semibold text-slate-800" dir="ltr">
+                    <td className="px-4 py-3.5 font-semibold text-slate-100" dir="ltr">
                       {formatUsdt(trade.amount)}$
                     </td>
                     <td className="px-4 py-3.5">
@@ -126,7 +126,7 @@ export default function UserTradesPage() {
                         <p className="mt-0.5 text-xs text-slate-400">{trade.note}</p>
                       ) : null}
                     </td>
-                    <td className="px-4 py-3.5 text-xs text-slate-500" dir="ltr">
+                    <td className="px-4 py-3.5 text-xs text-slate-400" dir="ltr">
                       {new Date(trade.createdAt).toLocaleString()}
                     </td>
                   </tr>

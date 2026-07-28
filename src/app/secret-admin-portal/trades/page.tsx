@@ -103,14 +103,14 @@ export default function AdminTradesPage() {
     <div className="page-shell">
       <AdminNav />
       <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-500">{t("eyebrow")}</p>
-        <h1 className="mt-2 text-3xl font-bold text-slate-900">{t("title")}</h1>
-        <p className="mt-2 max-w-2xl text-sm text-slate-500">{t("subtitle")}</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-300">{t("eyebrow")}</p>
+        <h1 className="mt-2 text-3xl font-bold text-white">{t("title")}</h1>
+        <p className="mt-2 max-w-2xl text-sm text-slate-400">{t("subtitle")}</p>
         <p className="mt-1 text-xs text-slate-400">{t("autoRefresh")}</p>
 
         <form onSubmit={handleCreate} className="card-surface mt-8 grid gap-4 p-6 sm:grid-cols-2 lg:grid-cols-3">
           <label className="block text-sm">
-            <span className="mb-1.5 block font-medium text-slate-700">{t("form.symbol")}</span>
+            <span className="mb-1.5 block font-medium text-slate-300">{t("form.symbol")}</span>
             <input
               className="input-surface font-mono uppercase"
               value={symbol}
@@ -120,14 +120,14 @@ export default function AdminTradesPage() {
             />
           </label>
           <label className="block text-sm">
-            <span className="mb-1.5 block font-medium text-slate-700">{t("form.side")}</span>
+            <span className="mb-1.5 block font-medium text-slate-300">{t("form.side")}</span>
             <select className="input-surface" value={side} onChange={(e) => setSide(e.target.value as TradeSide)}>
               <option value="SELL">{t("side.sell")}</option>
               <option value="BUY">{t("side.buy")}</option>
             </select>
           </label>
           <label className="block text-sm">
-            <span className="mb-1.5 block font-medium text-slate-700">{t("form.amount")}</span>
+            <span className="mb-1.5 block font-medium text-slate-300">{t("form.amount")}</span>
             <input
               className="input-surface"
               type="number"
@@ -139,7 +139,7 @@ export default function AdminTradesPage() {
             />
           </label>
           <label className="block text-sm">
-            <span className="mb-1.5 block font-medium text-slate-700">{t("form.outcome")}</span>
+            <span className="mb-1.5 block font-medium text-slate-300">{t("form.outcome")}</span>
             <select
               className="input-surface"
               value={outcome}
@@ -151,7 +151,7 @@ export default function AdminTradesPage() {
             </select>
           </label>
           <label className="block text-sm sm:col-span-2">
-            <span className="mb-1.5 block font-medium text-slate-700">{t("form.note")}</span>
+            <span className="mb-1.5 block font-medium text-slate-300">{t("form.note")}</span>
             <input
               className="input-surface"
               value={note}
@@ -163,7 +163,7 @@ export default function AdminTradesPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="rounded-xl bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-600 disabled:opacity-60"
+              className="rounded-xl bg-cyan-400/100 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-600 disabled:opacity-60"
             >
               {isSubmitting ? t("form.submitting") : t("form.submit")}
             </button>
@@ -171,12 +171,12 @@ export default function AdminTradesPage() {
         </form>
 
         {errorMessage ? (
-          <p className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <p className="mt-4 rounded-xl border border-rose-400/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-300">
             {errorMessage}
           </p>
         ) : null}
         {successMessage ? (
-          <p className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+          <p className="mt-4 rounded-xl border border-emerald-400/30 bg-emerald-50 px-4 py-3 text-sm text-emerald-300">
             {successMessage}
           </p>
         ) : null}
@@ -184,7 +184,7 @@ export default function AdminTradesPage() {
         <div className="table-surface mt-8">
           <table className="min-w-full text-sm">
             <thead>
-              <tr className="border-b border-slate-100 text-start text-xs uppercase tracking-wide text-slate-500">
+              <tr className="border-b border-white/10 text-start text-xs uppercase tracking-wide text-slate-400">
                 <th className="px-4 py-3">{t("columns.symbol")}</th>
                 <th className="px-4 py-3">{t("columns.side")}</th>
                 <th className="px-4 py-3">{t("columns.amount")}</th>
@@ -208,7 +208,7 @@ export default function AdminTradesPage() {
                 </tr>
               ) : (
                 trades.map((trade) => (
-                  <tr key={trade.id} className="border-b border-slate-50 last:border-0">
+                  <tr key={trade.id} className="border-b border-white/5 last:border-0">
                     <td className="px-4 py-3 font-mono font-semibold">{trade.symbol}</td>
                     <td className="px-4 py-3">{trade.side === "SELL" ? t("side.sell") : t("side.buy")}</td>
                     <td className="px-4 py-3" dir="ltr">
@@ -224,7 +224,7 @@ export default function AdminTradesPage() {
                     <td className="px-4 py-3">
                       <span
                         className={`rounded-lg px-2 py-0.5 text-xs font-semibold ${
-                          trade.isActive ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"
+                          trade.isActive ? "bg-emerald-50 text-emerald-300" : "bg-white/10 text-slate-400"
                         }`}
                       >
                         {trade.isActive ? t("status.active") : t("status.hidden")}
@@ -235,7 +235,7 @@ export default function AdminTradesPage() {
                         <button
                           type="button"
                           onClick={() => void toggleActive(trade)}
-                          className="rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-medium text-slate-600 hover:border-brand-200 hover:text-brand-600"
+                          className="rounded-lg border border-white/10 px-2.5 py-1 text-xs font-medium text-slate-400 hover:border-cyan-400/25 hover:text-cyan-300"
                         >
                           {trade.isActive ? t("actions.hide") : t("actions.show")}
                         </button>
