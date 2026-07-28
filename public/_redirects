@@ -7,9 +7,11 @@
 /secret-admin-portal/referrals /secret-admin-portal/referrals/ 301
 /secret-admin-portal/packages /secret-admin-portal/packages/ 301
 /secret-admin-portal/deposits /secret-admin-portal/deposits/ 301
+/secret-admin-portal/trades /secret-admin-portal/trades/ 301
 /login /login/ 301
 /register /register/ 301
 /dashboard /dashboard/ 301
+/trades /trades/ 301
 /deposit /deposit/ 301
 /withdraw /withdraw/ 301
 /invest /invest/ 301
