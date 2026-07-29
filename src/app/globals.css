@@ -70,6 +70,16 @@ body {
   backdrop-filter: blur(8px);
 }
 
+.table-surface table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table-surface th,
+.table-surface td {
+  vertical-align: middle;
+}
+
 .input-surface {
   width: 100%;
   border-radius: 0.875rem;
