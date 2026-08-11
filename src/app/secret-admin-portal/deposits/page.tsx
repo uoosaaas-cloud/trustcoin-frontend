@@ -104,8 +104,12 @@ export default function AdminDepositsPage() {
           </div>
         ) : null}
 
-        {isLoading || !data ? (
+        {isLoading ? (
           <div className="h-40 animate-pulse rounded-2xl border border-white/10 bg-white/5" />
+        ) : !data ? (
+          <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-8 text-center text-sm text-slate-400">
+            {errorMessage ?? tCommon("unknownError")}
+          </div>
         ) : (
           <div className="space-y-6">
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
@@ -130,6 +134,32 @@ export default function AdminDepositsPage() {
                 ))}
               </div>
             </section>
+
+            <SectionTable
+              title={t("approvedTitle")}
+              empty={t("approvedEmpty")}
+              rows={data.recentApprovedClaims ?? []}
+              headers={[
+                t("table.user"),
+                t("table.amount"),
+                t("table.network"),
+                t("table.address"),
+                t("table.status"),
+                t("table.date"),
+              ]}
+              render={(row) => (
+                <>
+                  <td className="px-3 py-2 text-slate-100">{row.user.email}</td>
+                  <td className="px-3 py-2 font-semibold">{formatUsdt(row.amount)} USDT</td>
+                  <td className="px-3 py-2">{row.network}</td>
+                  <td className="max-w-[180px] truncate px-3 py-2 font-mono text-xs" dir="ltr">
+                    {row.depositAddress ?? "—"}
+                  </td>
+                  <td className="px-3 py-2 text-xs">{row.sweep_tx_hash ? t("sweptLabel") : row.status}</td>
+                  <td className="px-3 py-2 text-xs text-slate-400">{formatDate(row.created_at)}</td>
+                </>
+              )}
+            />
 
             <SectionTable
               title={t("claimsTitle")}

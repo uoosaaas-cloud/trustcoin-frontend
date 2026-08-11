@@ -145,9 +145,13 @@ export default function WithdrawPage() {
       setNote("");
       setPaymentAddress("");
 
-      const txRes = await listMyTransactions();
-      await refreshWallet({ silent: true });
-      setHistory(txRes.data.filter((tx) => tx.type === "WITHDRAWAL"));
+      try {
+        const txRes = await listMyTransactions();
+        await refreshWallet({ silent: true });
+        setHistory(txRes.data.filter((tx) => tx.type === "WITHDRAWAL"));
+      } catch {
+        // Withdrawal already succeeded — don't surface refresh failures as OTP errors.
+      }
     } catch (error) {
       setErrorMessage(getApiErrorMessage(error, t("errors.generic")));
       throw error;

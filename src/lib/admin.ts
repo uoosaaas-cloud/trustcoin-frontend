@@ -248,6 +248,18 @@ export interface AdminDepositMonitoring {
     user: { id: string; email: string; status: string };
     depositAddress: string | null;
   }>;
+  recentApprovedClaims: Array<{
+    id: string;
+    amount: string;
+    network: string;
+    status: string;
+    tx_hash: string | null;
+    sweep_tx_hash: string | null;
+    swept_at: string | null;
+    created_at: string;
+    user: { id: string; email: string; status: string };
+    depositAddress: string | null;
+  }>;
   subWallets: Array<{
     id: string;
     network: string;
