@@ -8,11 +8,11 @@ import {
   approveAdminUser,
   blockAdminUser,
   deleteAdminUser,
+  fetchAdminUserIdDocumentObjectUrl,
   getAdminUsers,
   type AdminUserListItem,
 } from "@/lib/admin";
 import { getApiErrorMessage } from "@/lib/api";
-import { resolveAssetUrl } from "@/lib/deposit";
 import { formatUsdt, formatDate } from "@/lib/format";
 
 export default function AdminUsersPage() {
@@ -219,7 +219,7 @@ export default function AdminUsersPage() {
                       </div>
 
                       <div className="flex flex-wrap gap-2">
-                        {user.id_document_path ? (
+                        {user.id_document_path || user.has_id_document ? (
                           <button
                             type="button"
                             onClick={() => setPreviewUser(user)}
@@ -307,14 +307,15 @@ export default function AdminUsersPage() {
         )}
       </main>
 
-      {previewUser?.id_document_path ? (
+      {previewUser ? (
         <IdPreviewModal
+          userId={previewUser.id}
           email={previewUser.email}
           idNumber={previewUser.id_passport_number}
-          imageUrl={resolveAssetUrl(previewUser.id_document_path)}
           onClose={() => setPreviewUser(null)}
           title={t("idPreviewTitle")}
           closeLabel={tCommon("back")}
+          loadingLabel={t("idPreviewLoading")}
         />
       ) : null}
     </div>
@@ -347,20 +348,26 @@ function InfoItem({ label, value }: { label: string; value: string }) {
 }
 
 function IdPreviewModal({
+  userId,
   email,
   idNumber,
-  imageUrl,
   title,
   closeLabel,
+  loadingLabel,
   onClose,
 }: {
+  userId: string;
   email: string;
   idNumber: string | null;
-  imageUrl: string;
   title: string;
   closeLabel: string;
+  loadingLabel: string;
   onClose: () => void;
 }) {
+  const tCommon = useTranslations("common");
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") onClose();
@@ -368,6 +375,34 @@ function IdPreviewModal({
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [onClose]);
+
+  useEffect(() => {
+    let objectUrl: string | null = null;
+    let cancelled = false;
+
+    async function load() {
+      setErrorMessage(null);
+      setImageUrl(null);
+      try {
+        objectUrl = await fetchAdminUserIdDocumentObjectUrl(userId);
+        if (cancelled) {
+          URL.revokeObjectURL(objectUrl);
+          return;
+        }
+        setImageUrl(objectUrl);
+      } catch (error) {
+        if (!cancelled) {
+          setErrorMessage(error instanceof Error ? error.message : tCommon("unknownError"));
+        }
+      }
+    }
+
+    void load();
+    return () => {
+      cancelled = true;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [userId, tCommon]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -380,8 +415,16 @@ function IdPreviewModal({
             ID: {idNumber}
           </p>
         ) : null}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={imageUrl} alt="ID document" className="mt-4 max-h-[60vh] w-full rounded-2xl object-contain" />
+        {errorMessage ? (
+          <p className="mt-4 rounded-2xl border border-rose-400/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-300">
+            {errorMessage}
+          </p>
+        ) : imageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={imageUrl} alt="ID document" className="mt-4 max-h-[60vh] w-full rounded-2xl object-contain" />
+        ) : (
+          <div className="mt-4 h-48 animate-pulse rounded-2xl bg-white/5" aria-label={loadingLabel} />
+        )}
         <button
           type="button"
           onClick={onClose}

@@ -1,3 +1,4 @@
+import axios from "axios";
 import { api, type ApiSuccessResponse } from "./api";
 import { persistAuthSession, type AuthUser, type LoginPayload } from "./auth";
 
@@ -29,6 +30,7 @@ export interface AdminUserListItem {
   created_at: string;
   id_passport_number: string | null;
   id_document_path: string | null;
+  has_id_document?: boolean;
   availableBalance: string;
   lockedBalance: string;
   totalBalance: string;
@@ -165,6 +167,28 @@ export async function getAdminUsers(search?: string, status?: string) {
     },
   });
   return data;
+}
+
+export async function fetchAdminUserIdDocumentObjectUrl(userId: string): Promise<string> {
+  try {
+    const response = await api.get<Blob>(`/admin/users/${userId}/id-document`, { responseType: "blob" });
+    const blob = response.data;
+    if (blob.type?.includes("application/json")) {
+      const payload = JSON.parse(await blob.text()) as { message?: string };
+      throw new Error(payload.message || "Missing ID document");
+    }
+    return URL.createObjectURL(blob);
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response?.data instanceof Blob) {
+      try {
+        const payload = JSON.parse(await error.response.data.text()) as { message?: string };
+        if (payload.message) throw new Error(payload.message);
+      } catch (parsed) {
+        if (parsed instanceof Error && parsed.message) throw parsed;
+      }
+    }
+    throw error;
+  }
 }
 
 export async function approveAdminUser(userId: string) {

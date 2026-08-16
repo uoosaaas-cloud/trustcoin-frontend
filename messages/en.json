@@ -239,7 +239,15 @@
     "body": "Thanks for registering. Our team is reviewing your KYC documents. You will be able to sign in once your account is approved.",
     "timeline": "Reviews usually complete within 24 hours during business days.",
     "supportLabel": "Need help? Email support",
-    "backToLogin": "Back to login"
+    "backToLogin": "Back to login",
+    "resubmitTitle": "Re-upload ID photo",
+    "resubmitHint": "If the admin cannot see your ID, upload a clear photo again using the same email and password.",
+    "emailPlaceholder": "Email",
+    "passwordPlaceholder": "Password",
+    "resubmitSubmit": "Upload ID photo",
+    "resubmitSending": "Uploading…",
+    "resubmitRequired": "Enter your email, password, and a photo.",
+    "resubmitSuccess": "ID photo updated. Our team will review it shortly."
   },
   "support": {
     "label": "Customer support",
@@ -679,6 +687,7 @@
       "viewIdPhoto": "View ID photo",
       "noIdPhoto": "No ID photo uploaded",
       "idPreviewTitle": "ID / Passport document",
+      "idPreviewLoading": "Loading ID photo…",
       "approve": "Approve Account",
       "block": "Block User",
       "delete": "Delete User",

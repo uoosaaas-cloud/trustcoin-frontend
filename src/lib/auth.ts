@@ -116,6 +116,22 @@ export async function resetPassword(payload: ResetPasswordPayload) {
   return data;
 }
 
+export async function resubmitIdDocument(payload: {
+  email: string;
+  password: string;
+  idDocument: File;
+}) {
+  const formData = new FormData();
+  formData.set("email", payload.email);
+  formData.set("password", payload.password);
+  formData.set("idDocument", payload.idDocument);
+  const { data } = await api.post<ApiSuccessResponse<{ email: string }>>(
+    "/auth/resubmit-id-document",
+    formData
+  );
+  return data;
+}
+
 const AUTH_USER_STORAGE_KEY = "trustcoin_user";
 
 /** Reads the cached profile of the currently logged-in user (if any). */
