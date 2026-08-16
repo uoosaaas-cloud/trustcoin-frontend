@@ -139,10 +139,29 @@ function getBackendUnreachableMessage(): string {
   return BACKEND_UNREACHABLE_MESSAGE[lang] ?? BACKEND_UNREACHABLE_MESSAGE.en;
 }
 
+function detailsSummary(details: unknown): string | null {
+  if (!details || typeof details !== "object") return null;
+  const record = details as { summary?: unknown; fieldErrors?: Record<string, string[] | undefined> };
+  if (typeof record.summary === "string" && record.summary.trim()) {
+    return record.summary.trim();
+  }
+  if (record.fieldErrors) {
+    const first = Object.values(record.fieldErrors)
+      .flat()
+      .find((value) => typeof value === "string" && value.trim());
+    if (first) return first;
+  }
+  return null;
+}
+
 /** Extracts a human-readable, already-translated message from an Axios error. */
 export function getApiErrorMessage(error: unknown, fallback: string): string {
   if (axios.isAxiosError(error)) {
     const data = error.response?.data as ApiErrorResponse | undefined;
+    const summary = detailsSummary(data?.details);
+    if (data?.message && summary) {
+      return `${data.message} (${summary})`;
+    }
     if (data?.message) {
       return data.message;
     }

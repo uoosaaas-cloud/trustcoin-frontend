@@ -79,7 +79,13 @@ export default function AdminGiftsPage() {
     setErrorMessage(null);
     setSuccessMessage(null);
 
-    const amountNum = Number(amount.trim());
+    const amountNum = Number(
+      amount
+        .trim()
+        .replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit)))
+        .replace(/[۰-۹]/g, (digit) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit)))
+        .replace(/,/g, "")
+    );
     if (!amount.trim() || Number.isNaN(amountNum) || amountNum <= 0) {
       setErrorMessage(t("errors.amountRequired"));
       return;
@@ -98,10 +104,10 @@ export default function AdminGiftsPage() {
     setIsSending(true);
     try {
       const response = await distributeAdminGifts({
-        amount: amount.trim(),
+        amount: String(amountNum),
         note: note.trim() || undefined,
         scope,
-        userIds: scope === "SELECTED" ? selectedIds : undefined,
+        userIds: scope === "SELECTED" ? selectedIds.filter(Boolean) : undefined,
       });
       setSuccessMessage(
         t("success", {
@@ -148,9 +154,8 @@ export default function AdminGiftsPage() {
             </label>
             <input
               id="gift-amount"
-              type="number"
-              min="0"
-              step="any"
+              type="text"
+              inputMode="decimal"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder={t("amountPlaceholder")}
@@ -175,6 +180,7 @@ export default function AdminGiftsPage() {
                 <input
                   type="radio"
                   name="gift-scope"
+                  value="SELECTED"
                   checked={scope === "SELECTED"}
                   onChange={() => setScope("SELECTED")}
                 />
@@ -184,6 +190,7 @@ export default function AdminGiftsPage() {
                 <input
                   type="radio"
                   name="gift-scope"
+                  value="ALL_EXCEPT_ADMIN"
                   checked={scope === "ALL_EXCEPT_ADMIN"}
                   onChange={() => setScope("ALL_EXCEPT_ADMIN")}
                 />

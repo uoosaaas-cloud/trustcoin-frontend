@@ -336,6 +336,20 @@ export async function distributeAdminGifts(payload: {
   scope: "ALL_EXCEPT_ADMIN" | "SELECTED";
   userIds?: string[];
 }) {
-  const { data } = await api.post<ApiSuccessResponse<AdminGiftDistributionResult>>("/admin/gifts", payload);
+  const body: {
+    amount: string;
+    scope: "ALL_EXCEPT_ADMIN" | "SELECTED";
+    note?: string;
+    userIds?: string[];
+  } = {
+    amount: payload.amount.trim(),
+    scope: payload.scope,
+  };
+  const note = payload.note?.trim();
+  if (note) body.note = note;
+  if (payload.scope === "SELECTED") {
+    body.userIds = (payload.userIds ?? []).map((id) => id.trim()).filter(Boolean);
+  }
+  const { data } = await api.post<ApiSuccessResponse<AdminGiftDistributionResult>>("/admin/gifts", body);
   return data;
 }
