@@ -16,5 +16,6 @@ export const ADMIN_ROUTES = {
   referrals: `${ADMIN_PANEL_BASE}referrals/`,
   packages: `${ADMIN_PANEL_BASE}packages/`,
   deposits: `${ADMIN_PANEL_BASE}deposits/`,
+  gifts: `${ADMIN_PANEL_BASE}gifts/`,
   trades: `${ADMIN_PANEL_BASE}trades/`,
 } as const;

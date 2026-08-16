@@ -134,6 +134,12 @@ export default function AdminOverviewPage() {
           >
             {t("goUsers")}
           </Link>
+          <Link
+            href={ADMIN_ROUTES.gifts}
+            className="rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-semibold text-slate-300 hover:bg-white/10"
+          >
+            {t("goGifts")}
+          </Link>
         </div>
       </main>
     </div>

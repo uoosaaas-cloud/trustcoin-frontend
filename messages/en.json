@@ -485,6 +485,7 @@
       "wrongNetwork": "Sending on the wrong network can permanently lose your funds.",
       "minAmount": "Minimum credited deposit is typically 1 USDT (smaller amounts may not sweep)."
     },
+    "networkGift": "Gift",
     "historyTitle": "Deposit History",
     "historyEmpty": "No deposits detected yet. Send USDT to the address above.",
     "table": {
@@ -497,7 +498,8 @@
     "status": {
       "PENDING": "Processing",
       "APPROVED": "Credited",
-      "REJECTED": "Failed"
+      "REJECTED": "Failed",
+      "GIFT": "Gift deposit"
     },
     "errors": {
       "addressGeneric": "Could not load your deposit address. Please try again."
@@ -511,6 +513,7 @@
       "trades": "Trades",
       "withdrawals": "Withdrawals",
       "deposits": "Deposits",
+      "gifts": "Gifts",
       "users": "Users",
       "packages": "Packages",
       "referrals": "Referrals",
@@ -557,7 +560,35 @@
       "pendingAlert": "{count} withdrawal request(s) awaiting review.",
       "reviewWithdrawals": "Review withdrawals",
       "goWithdrawals": "Pending withdrawals",
-      "goUsers": "Manage users"
+      "goUsers": "Manage users",
+      "goGifts": "Distribute gifts"
+    },
+    "gifts": {
+      "eyebrow": "Rewards",
+      "title": "Distribute gifts",
+      "subtitle": "Credit USDT to selected users, or to every active user except the admin. Each gift is added to available balance, recorded as a gift deposit, and emailed to the user.",
+      "amountLabel": "Gift amount (USDT)",
+      "amountPlaceholder": "50",
+      "noteLabel": "Internal note (optional)",
+      "notePlaceholder": "Holiday bonus",
+      "scopeLabel": "Recipients",
+      "scopeSelected": "Selected users ({count})",
+      "scopeAll": "All active users except admin ({count})",
+      "usersTitle": "Choose users",
+      "searchPlaceholder": "Search by email",
+      "selectVisible": "Select visible",
+      "clearSelection": "Clear",
+      "available": "Available: {amount} USDT",
+      "empty": "No matching active users.",
+      "submit": "Send gifts",
+      "sending": "Sending…",
+      "confirm": "Credit {amount} USDT to {count} user(s)? This cannot be undone.",
+      "success": "Gift of {amount} USDT credited to {credited} of {targeted} user(s). Emails were queued.",
+      "errors": {
+        "amountRequired": "Enter a gift amount greater than zero.",
+        "usersRequired": "Select at least one user, or choose all users except admin.",
+        "generic": "Could not distribute gifts. Please try again."
+      }
     },
     "trades": {
       "eyebrow": "Desk signals",

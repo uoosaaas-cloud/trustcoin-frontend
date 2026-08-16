@@ -296,9 +296,18 @@ export default function DepositPage() {
                         <td dir="ltr" className="whitespace-nowrap px-4 py-3 text-start font-semibold text-white">
                           {deposit.amount} {deposit.currency}
                         </td>
-                        <td className="whitespace-nowrap px-4 py-3 text-slate-300">{deposit.network}</td>
+                        <td className="whitespace-nowrap px-4 py-3 text-slate-300">
+                          {deposit.network === "GIFT" ? t("networkGift") : deposit.network}
+                        </td>
                         <td className="whitespace-nowrap px-4 py-3">
-                          <StatusBadge status={deposit.status} label={t(`status.${deposit.status}`)} />
+                          <StatusBadge
+                            status={deposit.status}
+                            label={
+                              deposit.network === "GIFT" && deposit.status === "APPROVED"
+                                ? t("status.GIFT")
+                                : t(`status.${deposit.status}`)
+                            }
+                          />
                         </td>
                         <td className="whitespace-nowrap px-4 py-3 text-slate-400">
                           {formatDateTime(deposit.created_at)}
