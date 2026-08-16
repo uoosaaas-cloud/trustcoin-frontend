@@ -10,6 +10,7 @@ import {
   deleteAdminUser,
   fetchAdminUserIdDocumentObjectUrl,
   getAdminUsers,
+  requestAdminIdReupload,
   type AdminUserListItem,
 } from "@/lib/admin";
 import { getApiErrorMessage } from "@/lib/api";
@@ -105,6 +106,23 @@ export default function AdminUsersPage() {
         setExpandedId((id) => (id === userId ? null : id));
       }
       await loadUsers(query, statusFilter);
+    } catch (error) {
+      setErrorMessage(getApiErrorMessage(error, t("errors.actionFailed")));
+    } finally {
+      setActionUserId(null);
+    }
+  }
+
+  async function requestIdReupload(userId: string, email: string) {
+    if (!window.confirm(t("confirmRequestId", { email }))) {
+      return;
+    }
+    setActionUserId(userId);
+    setErrorMessage(null);
+    setSuccessMessage(null);
+    try {
+      await requestAdminIdReupload(userId);
+      setSuccessMessage(t("messages.idReuploadSent", { email }));
     } catch (error) {
       setErrorMessage(getApiErrorMessage(error, t("errors.actionFailed")));
     } finally {
@@ -232,6 +250,17 @@ export default function AdminUsersPage() {
                             {t("noIdPhoto")}
                           </span>
                         )}
+
+                        {!isAdmin ? (
+                          <button
+                            type="button"
+                            disabled={busy}
+                            onClick={() => void requestIdReupload(user.id, user.email)}
+                            className="rounded-xl border border-cyan-300/30 bg-cyan-400/10 px-3 py-2 text-xs font-semibold text-cyan-200 disabled:opacity-50"
+                          >
+                            {t("requestIdPhoto")}
+                          </button>
+                        ) : null}
 
                         {!isAdmin && user.status !== "ACTIVE" ? (
                           <button

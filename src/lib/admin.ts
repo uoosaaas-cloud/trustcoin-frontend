@@ -196,6 +196,13 @@ export async function approveAdminUser(userId: string) {
   return data;
 }
 
+export async function requestAdminIdReupload(userId: string) {
+  const { data } = await api.post<ApiSuccessResponse<{ email: string }>>(
+    `/admin/users/${userId}/request-id-reupload`
+  );
+  return data;
+}
+
 export async function blockAdminUser(userId: string) {
   const { data } = await api.post<ApiSuccessResponse<unknown>>(`/admin/users/${userId}/block`);
   return data;
