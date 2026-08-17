@@ -247,6 +247,8 @@
     "resubmitSubmit": "رفع صورة الهوية",
     "resubmitSending": "جارٍ الرفع…",
     "resubmitRequired": "أدخل البريد وكلمة المرور والصورة.",
+    "resubmitType": "نوع الملف غير مدعوم. يرجى رفع صورة JPG أو PNG أو WEBP.",
+    "resubmitTooLarge": "الملف المحدد كبير جداً. الحد الأقصى 5 ميجابايت.",
     "resubmitSuccess": "تم تحديث صورة الهوية. سيراجعها الفريق قريباً."
   },
   "support": {

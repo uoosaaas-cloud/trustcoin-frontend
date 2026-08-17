@@ -247,6 +247,8 @@
     "resubmitSubmit": "Upload ID photo",
     "resubmitSending": "Uploading…",
     "resubmitRequired": "Enter your email, password, and a photo.",
+    "resubmitType": "Unsupported file type. Please upload a JPG, PNG, or WEBP image.",
+    "resubmitTooLarge": "The selected file is too large. Maximum size is 5MB.",
     "resubmitSuccess": "ID photo updated. Our team will review it shortly."
   },
   "support": {

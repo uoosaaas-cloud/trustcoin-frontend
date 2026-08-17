@@ -2,17 +2,20 @@
 
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { AuthChromeHeader } from "@/components/AuthChromeHeader";
 import { TrustComplianceBlock } from "@/components/TrustCompliance";
 import { getApiErrorMessage } from "@/lib/api";
 import { resubmitIdDocument } from "@/lib/auth";
 
 const SUPPORT_EMAIL = "support@trustcoin.cc";
+const ALLOWED_ID_TYPES = new Set(["image/jpeg", "image/jpg", "image/png", "image/webp"]);
+const MAX_ID_BYTES = 5 * 1024 * 1024;
 
 export default function AccountPendingPage() {
   const t = useTranslations("accountPending");
   const tCommon = useTranslations("common");
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [idDocument, setIdDocument] = useState<File | null>(null);
@@ -28,6 +31,14 @@ export default function AccountPendingPage() {
       setErrorMessage(t("resubmitRequired"));
       return;
     }
+    if (!ALLOWED_ID_TYPES.has(idDocument.type)) {
+      setErrorMessage(t("resubmitType"));
+      return;
+    }
+    if (idDocument.size > MAX_ID_BYTES) {
+      setErrorMessage(t("resubmitTooLarge"));
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -39,6 +50,7 @@ export default function AccountPendingPage() {
       setSuccessMessage(t("resubmitSuccess"));
       setPassword("");
       setIdDocument(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (error) {
       setErrorMessage(getApiErrorMessage(error, tCommon("unknownError")));
     } finally {
@@ -92,6 +104,7 @@ export default function AccountPendingPage() {
                 autoComplete="current-password"
               />
               <input
+                ref={fileInputRef}
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
                 onChange={(event) => setIdDocument(event.target.files?.[0] ?? null)}
