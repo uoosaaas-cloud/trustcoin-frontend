@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AuthChromeHeader } from "@/components/AuthChromeHeader";
 import { TrustComplianceBlock } from "@/components/TrustCompliance";
-import { getApiErrorMessage } from "@/lib/api";
+import { clearIdReuploadSession, getApiErrorMessage, getIdReuploadSession } from "@/lib/api";
 import { resubmitIdDocument } from "@/lib/auth";
 
 const SUPPORT_EMAIL = "support@trustcoin.cc";
@@ -16,12 +16,20 @@ export default function AccountPendingPage() {
   const t = useTranslations("accountPending");
   const tCommon = useTranslations("common");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showResubmit, setShowResubmit] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [idDocument, setIdDocument] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    const session = getIdReuploadSession();
+    if (!session) return;
+    setEmail(session.email);
+    setShowResubmit(true);
+  }, []);
 
   async function handleResubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -51,6 +59,8 @@ export default function AccountPendingPage() {
       setPassword("");
       setIdDocument(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
+      clearIdReuploadSession();
+      setShowResubmit(false);
     } catch (error) {
       setErrorMessage(getApiErrorMessage(error, tCommon("unknownError")));
     } finally {
@@ -73,18 +83,19 @@ export default function AccountPendingPage() {
             </h1>
             <p className="mt-3 text-[15px] leading-relaxed text-slate-300">{t("body")}</p>
             <p className="mt-3 text-[14px] leading-relaxed text-slate-400">{t("timeline")}</p>
+            {successMessage ? (
+              <p className="mt-4 rounded-xl border border-emerald-400/30 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-300">
+                {successMessage}
+              </p>
+            ) : null}
 
+            {showResubmit ? (
             <form onSubmit={handleResubmit} className="mt-6 space-y-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
               <p className="text-sm font-semibold text-white">{t("resubmitTitle")}</p>
               <p className="text-xs leading-relaxed text-slate-400">{t("resubmitHint")}</p>
               {errorMessage ? (
                 <p className="rounded-xl border border-rose-400/30 bg-rose-500/10 px-3 py-2 text-xs text-rose-300">
                   {errorMessage}
-                </p>
-              ) : null}
-              {successMessage ? (
-                <p className="rounded-xl border border-emerald-400/30 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-300">
-                  {successMessage}
                 </p>
               ) : null}
               <input
@@ -118,6 +129,7 @@ export default function AccountPendingPage() {
                 {isSubmitting ? t("resubmitSending") : t("resubmitSubmit")}
               </button>
             </form>
+            ) : null}
 
             <a
               href={`mailto:${SUPPORT_EMAIL}`}

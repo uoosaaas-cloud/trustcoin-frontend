@@ -55,6 +55,69 @@ export const api = axios.create({
   },
 });
 
+export const ID_REUPLOAD_SESSION_KEY = "trustcoin_id_reupload";
+const ID_REUPLOAD_SESSION_MAX_MS = 48 * 60 * 60 * 1000;
+
+function readRequestEmail(config?: InternalAxiosRequestConfig): string {
+  const raw = config?.data;
+  if (!raw) return "";
+  if (typeof FormData !== "undefined" && raw instanceof FormData) {
+    const email = raw.get("email");
+    return typeof email === "string" ? email.trim().toLowerCase() : "";
+  }
+  if (typeof raw === "string") {
+    try {
+      const parsed = JSON.parse(raw) as { email?: unknown };
+      return typeof parsed.email === "string" ? parsed.email.trim().toLowerCase() : "";
+    } catch {
+      return "";
+    }
+  }
+  if (typeof raw === "object" && raw !== null && "email" in raw) {
+    const email = (raw as { email?: unknown }).email;
+    return typeof email === "string" ? email.trim().toLowerCase() : "";
+  }
+  return "";
+}
+
+function isIdReuploadRequested(details: unknown): boolean {
+  return Boolean(
+    details &&
+      typeof details === "object" &&
+      (details as { idReuploadRequested?: unknown }).idReuploadRequested === true
+  );
+}
+
+export function markIdReuploadSession(email: string): void {
+  if (typeof window === "undefined") return;
+  sessionStorage.setItem(
+    ID_REUPLOAD_SESSION_KEY,
+    JSON.stringify({ email: email.trim().toLowerCase(), at: Date.now() })
+  );
+}
+
+export function clearIdReuploadSession(): void {
+  if (typeof window === "undefined") return;
+  sessionStorage.removeItem(ID_REUPLOAD_SESSION_KEY);
+}
+
+export function getIdReuploadSession(): { email: string } | null {
+  if (typeof window === "undefined") return null;
+  const raw = sessionStorage.getItem(ID_REUPLOAD_SESSION_KEY);
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as { email?: unknown; at?: unknown };
+    if (typeof parsed.email !== "string" || !parsed.email.trim()) return null;
+    if (typeof parsed.at === "number" && Date.now() - parsed.at > ID_REUPLOAD_SESSION_MAX_MS) {
+      sessionStorage.removeItem(ID_REUPLOAD_SESSION_KEY);
+      return null;
+    }
+    return { email: parsed.email.trim().toLowerCase() };
+  } catch {
+    return null;
+  }
+}
+
 api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const token = getStoredAuthToken();
 
@@ -104,10 +167,18 @@ api.interceptors.response.use(
           path.startsWith("/account-pending") ||
           path.startsWith("/secret-admin-portal/login");
 
-        if (!isAuthPage) {
-          if (messageKey === "auth.account_pending") {
+        if (messageKey === "auth.account_pending") {
+          const email = readRequestEmail(error.config);
+          if (isIdReuploadRequested(error.response?.data?.details) && email) {
+            markIdReuploadSession(email);
+          } else if (email) {
+            clearIdReuploadSession();
+          }
+          if (!path.startsWith("/account-pending")) {
             window.location.replace("/account-pending");
-          } else if (messageKey === "auth.account_suspended") {
+          }
+        } else if (!isAuthPage) {
+          if (messageKey === "auth.account_suspended") {
             window.location.replace("/login?reason=suspended");
           } else {
             const next = encodeURIComponent(path + window.location.search);
