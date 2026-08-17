@@ -14,7 +14,7 @@ import {
   type AdminUserListItem,
 } from "@/lib/admin";
 import { getApiErrorMessage } from "@/lib/api";
-import { formatUsdt, formatDate } from "@/lib/format";
+import { formatUsdt, formatDate, formatDateOnly } from "@/lib/format";
 
 export default function AdminUsersPage() {
   const ready = useRequireAdmin();
@@ -228,6 +228,11 @@ export default function AdminUsersPage() {
                   {open ? (
                     <div className="space-y-4 border-t border-white/10 px-4 py-4">
                       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                        <InfoItem label={t("fullName")} value={user.full_name ?? t("notProvided")} />
+                        <InfoItem
+                          label={t("dateOfBirth")}
+                          value={user.date_of_birth ? formatDateOnly(user.date_of_birth) : t("notProvided")}
+                        />
                         <InfoItem label={t("idNumber")} value={user.id_passport_number ?? t("idMissing")} />
                         <InfoItem label={t("referralCode")} value={user.referral_code} />
                         <InfoItem
@@ -340,11 +345,18 @@ export default function AdminUsersPage() {
         <IdPreviewModal
           userId={previewUser.id}
           email={previewUser.email}
+          fullName={previewUser.full_name}
+          dateOfBirth={previewUser.date_of_birth}
           idNumber={previewUser.id_passport_number}
           onClose={() => setPreviewUser(null)}
           title={t("idPreviewTitle")}
           closeLabel={tCommon("back")}
           loadingLabel={t("idPreviewLoading")}
+          fullNameLabel={t("fullName")}
+          dateOfBirthLabel={t("dateOfBirth")}
+          emailLabel={t("email")}
+          idNumberLabel={t("idNumber")}
+          notProvidedLabel={t("notProvided")}
         />
       ) : null}
     </div>
@@ -369,9 +381,7 @@ function InfoItem({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2">
       <p className="text-[11px] font-medium uppercase tracking-wider text-slate-400">{label}</p>
-      <p className="mt-1 break-all text-sm font-semibold text-white" dir="ltr">
-        {value}
-      </p>
+      <p className="mt-1 break-all text-sm font-semibold text-white">{value}</p>
     </div>
   );
 }
@@ -379,18 +389,32 @@ function InfoItem({ label, value }: { label: string; value: string }) {
 function IdPreviewModal({
   userId,
   email,
+  fullName,
+  dateOfBirth,
   idNumber,
   title,
   closeLabel,
   loadingLabel,
+  fullNameLabel,
+  dateOfBirthLabel,
+  emailLabel,
+  idNumberLabel,
+  notProvidedLabel,
   onClose,
 }: {
   userId: string;
   email: string;
+  fullName: string | null;
+  dateOfBirth: string | null;
   idNumber: string | null;
   title: string;
   closeLabel: string;
   loadingLabel: string;
+  fullNameLabel: string;
+  dateOfBirthLabel: string;
+  emailLabel: string;
+  idNumberLabel: string;
+  notProvidedLabel: string;
   onClose: () => void;
 }) {
   const tCommon = useTranslations("common");
@@ -438,12 +462,24 @@ function IdPreviewModal({
       <button type="button" aria-label={closeLabel} className="absolute inset-0 bg-slate-900/50" onClick={onClose} />
       <div className="card-surface relative z-10 max-h-[90vh] w-full max-w-lg overflow-auto rounded-3xl p-5">
         <h2 className="text-lg font-bold text-white">{title}</h2>
-        <p className="mt-1 text-sm text-slate-400">{email}</p>
-        {idNumber ? (
-          <p className="mt-1 text-xs text-slate-400" dir="ltr">
-            ID: {idNumber}
+        <div className="mt-3 space-y-1.5 text-sm text-slate-300">
+          <p>
+            <span className="text-slate-500">{fullNameLabel}: </span>
+            {fullName || notProvidedLabel}
           </p>
-        ) : null}
+          <p dir="ltr">
+            <span className="text-slate-500">{emailLabel}: </span>
+            {email}
+          </p>
+          <p>
+            <span className="text-slate-500">{dateOfBirthLabel}: </span>
+            {dateOfBirth ? formatDateOnly(dateOfBirth) : notProvidedLabel}
+          </p>
+          <p dir="ltr">
+            <span className="text-slate-500">{idNumberLabel}: </span>
+            {idNumber || notProvidedLabel}
+          </p>
+        </div>
         {errorMessage ? (
           <p className="mt-4 rounded-2xl border border-rose-400/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-300">
             {errorMessage}

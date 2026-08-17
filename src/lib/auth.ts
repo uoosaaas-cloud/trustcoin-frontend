@@ -5,6 +5,8 @@ export interface RegisterPayload {
   password: string;
   language: "en" | "ar";
   referralCode?: string;
+  fullName: string;
+  dateOfBirth: string;
   idPassportNumber: string;
   idDocument: File;
 }
@@ -44,6 +46,8 @@ export async function registerUser(payload: RegisterPayload) {
   formData.set("email", payload.email);
   formData.set("password", payload.password);
   formData.set("language", payload.language);
+  formData.set("fullName", payload.fullName);
+  formData.set("dateOfBirth", payload.dateOfBirth);
   formData.set("idPassportNumber", payload.idPassportNumber);
   if (payload.referralCode) {
     formData.set("referralCode", payload.referralCode);

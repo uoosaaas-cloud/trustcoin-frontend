@@ -28,6 +28,8 @@ export interface AdminUserListItem {
   language: string;
   referral_code: string;
   created_at: string;
+  full_name: string | null;
+  date_of_birth: string | null;
   id_passport_number: string | null;
   id_document_path: string | null;
   has_id_document?: boolean;

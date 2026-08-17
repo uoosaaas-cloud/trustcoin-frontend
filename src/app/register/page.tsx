@@ -13,6 +13,7 @@ import { registerUser, resendOtp, verifyOtp } from "@/lib/auth";
 import type { Locale } from "@/i18n/config";
 
 const STRONG_PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+const FULL_NAME_REGEX = /^[\p{L}\p{M}]+(?:[ '\-][\p{L}\p{M}]+)*$/u;
 const RESEND_COOLDOWN_SECONDS = 60;
 const ALLOWED_ID_TYPES = new Set(["image/jpeg", "image/jpg", "image/png", "image/webp"]);
 const MAX_ID_BYTES = 5 * 1024 * 1024;
@@ -40,6 +41,8 @@ function RegisterForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
   const [referralCode, setReferralCode] = useState("");
   const [idPassportNumber, setIdPassportNumber] = useState("");
   const [idDocument, setIdDocument] = useState<File | null>(null);
@@ -94,6 +97,31 @@ function RegisterForm() {
       return;
     }
 
+    const trimmedName = fullName.trim().replace(/\s+/g, " ");
+    if (trimmedName.length < 2 || !FULL_NAME_REGEX.test(trimmedName)) {
+      setErrorMessage(tRegister("errors.fullNameInvalid"));
+      return;
+    }
+
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateOfBirth)) {
+      setErrorMessage(tRegister("errors.dateOfBirthRequired"));
+      return;
+    }
+    const [year, month, day] = dateOfBirth.split("-").map(Number);
+    const dob = new Date(Date.UTC(year, month - 1, day));
+    if (dob.getUTCFullYear() !== year || dob.getUTCMonth() !== month - 1 || dob.getUTCDate() !== day) {
+      setErrorMessage(tRegister("errors.dateOfBirthRequired"));
+      return;
+    }
+    const now = new Date();
+    let age = now.getUTCFullYear() - dob.getUTCFullYear();
+    const monthDelta = now.getUTCMonth() - dob.getUTCMonth();
+    if (monthDelta < 0 || (monthDelta === 0 && now.getUTCDate() < dob.getUTCDate())) age -= 1;
+    if (age < 18 || age > 120) {
+      setErrorMessage(tRegister("errors.dateOfBirthAge"));
+      return;
+    }
+
     if (idPassportNumber.trim().length < 4) {
       setErrorMessage(tRegister("errors.idRequired"));
       return;
@@ -122,6 +150,8 @@ function RegisterForm() {
         password,
         language: locale,
         referralCode: referralCode.trim() || undefined,
+        fullName: trimmedName,
+        dateOfBirth,
         idPassportNumber: idPassportNumber.trim(),
         idDocument,
       });
@@ -255,6 +285,29 @@ function RegisterForm() {
                       dir="ltr"
                     />
                     {!passwordsMatch && <FieldError message={tRegister("errors.passwordMismatch")} />}
+                  </Field>
+
+                  <Field label={tRegister("fullNameLabel")}>
+                    <input
+                      type="text"
+                      required
+                      autoComplete="name"
+                      value={fullName}
+                      onChange={(event) => setFullName(event.target.value)}
+                      placeholder={tRegister("fullNamePlaceholder")}
+                      className="input-surface"
+                    />
+                  </Field>
+
+                  <Field label={tRegister("dateOfBirthLabel")}>
+                    <input
+                      type="date"
+                      required
+                      value={dateOfBirth}
+                      onChange={(event) => setDateOfBirth(event.target.value)}
+                      className="input-surface"
+                      dir="ltr"
+                    />
                   </Field>
 
                   <Field label={tRegister("idPassportLabel")} hint={tRegister("idPassportHint")}>
