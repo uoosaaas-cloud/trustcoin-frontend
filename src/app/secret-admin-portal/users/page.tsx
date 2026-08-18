@@ -242,7 +242,7 @@ export default function AdminUsersPage() {
                       </div>
 
                       <div className="flex flex-wrap gap-2">
-                        {user.id_document_path || user.has_id_document ? (
+                        {user.has_id_document ? (
                           <button
                             type="button"
                             onClick={() => setPreviewUser(user)}

@@ -120,6 +120,14 @@ export async function resetPassword(payload: ResetPasswordPayload) {
   return data;
 }
 
+export async function checkIdReuploadStatus(payload: { email: string; password: string }) {
+  const { data } = await api.post<ApiSuccessResponse<{ email: string; requested: boolean }>>(
+    "/auth/id-reupload-status",
+    payload
+  );
+  return data;
+}
+
 export async function resubmitIdDocument(payload: {
   email: string;
   password: string;
