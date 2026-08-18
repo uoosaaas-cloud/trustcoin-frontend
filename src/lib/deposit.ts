@@ -58,7 +58,9 @@ export async function getDepositHistory() {
 
 /** Resolves a backend-relative asset path (e.g. `/uploads/...`) to an absolute URL. */
 export function resolveAssetUrl(relativePath: string): string {
+  if (/^https?:\/\//i.test(relativePath)) return relativePath;
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000/api/v1";
   const serverOrigin = apiBaseUrl.replace(/\/api\/v1\/?$/, "");
-  return `${serverOrigin}${relativePath}`;
+  const path = relativePath.startsWith("/") ? relativePath : `/${relativePath}`;
+  return `${serverOrigin}${path}`;
 }

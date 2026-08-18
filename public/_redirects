@@ -7,6 +7,7 @@
 /secret-admin-portal/referrals /secret-admin-portal/referrals/ 301
 /secret-admin-portal/packages /secret-admin-portal/packages/ 301
 /secret-admin-portal/deposits /secret-admin-portal/deposits/ 301
+/secret-admin-portal/gifts /secret-admin-portal/gifts/ 301
 /secret-admin-portal/trades /secret-admin-portal/trades/ 301
 /login /login/ 301
 /register /register/ 301
@@ -16,5 +17,8 @@
 /withdraw /withdraw/ 301
 /invest /invest/ 301
 /referrals /referrals/ 301
+/account-pending /account-pending/ 301
+/already-registered /already-registered/ 301
+/already-registered/verify-email /already-registered/verify-email/ 301
 /forgot-password /forgot-password/ 301
 /reset-password /reset-password/ 301

@@ -175,14 +175,14 @@ api.interceptors.response.use(
             clearIdReuploadSession();
           }
           if (!path.startsWith("/account-pending")) {
-            window.location.replace("/account-pending");
+            window.location.replace("/account-pending/");
           }
         } else if (!isAuthPage) {
           if (messageKey === "auth.account_suspended") {
-            window.location.replace("/login?reason=suspended");
+            window.location.replace("/login/?reason=suspended");
           } else {
             const next = encodeURIComponent(path + window.location.search);
-            window.location.replace(`/login?next=${next}&reason=session`);
+            window.location.replace(`/login/?next=${next}&reason=session`);
           }
         }
       }
