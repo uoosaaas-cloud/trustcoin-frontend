@@ -72,14 +72,20 @@ export function getInvestmentProgress(
   return Math.min(100, Math.max(0, ((now - start) / (end - start)) * 100));
 }
 
-/** Whole days remaining until maturity (0 when completed/past). */
+/**
+ * Whole UTC calendar days remaining until maturity.
+ * Date-only UTC math so timezone offsets cannot collapse a multi-day package after local midnight.
+ */
 export function getDaysRemaining(
   inv: Pick<InvestmentRecord, "end_date" | "status">
 ): number {
   if (inv.status === "COMPLETED") return 0;
-  const end = new Date(inv.end_date).getTime();
-  if (!Number.isFinite(end)) return 0;
-  return Math.max(0, Math.ceil((end - Date.now()) / 86_400_000));
+  const end = new Date(inv.end_date);
+  if (Number.isNaN(end.getTime())) return 0;
+  const now = new Date();
+  const endUtc = Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate());
+  const nowUtc = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  return Math.max(0, Math.round((endUtc - nowUtc) / 86_400_000));
 }
 
 /** Accrual display step for live total earned (6 hours). */

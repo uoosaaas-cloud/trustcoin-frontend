@@ -8,14 +8,12 @@ import { getApiErrorMessage } from "@/lib/api";
 import { formatDate, formatUsdt } from "@/lib/format";
 import {
   durationKeyFromPackage,
-  EARNINGS_ACCRUAL_STEP_MS,
   getDailyProfitUsdt,
   getDaysRemaining,
   getInvestmentProgress,
   getLiveTotalEarned,
   getMyInvestments,
   getPeriodReturnPercent,
-  msUntilNextEarningsStep,
   type InvestmentRecord,
 } from "@/lib/investments";
 
@@ -154,19 +152,18 @@ function useLiveTotalEarned(investment: InvestmentRecord): number {
   useEffect(() => {
     if (investment.status !== "ACTIVE") return;
 
-    let intervalId: number | undefined;
-
     const tick = () => setNow(Date.now());
+    tick();
+    const intervalId = window.setInterval(tick, 30_000);
 
-    const delay = msUntilNextEarningsStep(investment.start_date);
-    const timeoutId = window.setTimeout(() => {
-      tick();
-      intervalId = window.setInterval(tick, EARNINGS_ACCRUAL_STEP_MS);
-    }, delay);
+    function onVisibility() {
+      if (document.visibilityState === "visible") tick();
+    }
+    document.addEventListener("visibilitychange", onVisibility);
 
     return () => {
-      window.clearTimeout(timeoutId);
-      if (intervalId !== undefined) window.clearInterval(intervalId);
+      window.clearInterval(intervalId);
+      document.removeEventListener("visibilitychange", onVisibility);
     };
   }, [investment.status, investment.id, investment.start_date]);
 
