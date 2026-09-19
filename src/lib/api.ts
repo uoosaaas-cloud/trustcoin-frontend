@@ -158,6 +158,7 @@ api.interceptors.response.use(
         window.localStorage.removeItem("trustcoin_user");
 
         const path = window.location.pathname;
+        const isAdminSurface = path.startsWith("/secret-admin-portal") || path.startsWith("/admin");
         const isAuthPage =
           path.startsWith("/login") ||
           path.startsWith("/register") ||
@@ -165,7 +166,8 @@ api.interceptors.response.use(
           path.startsWith("/reset-password") ||
           path.startsWith("/already-registered") ||
           path.startsWith("/account-pending") ||
-          path.startsWith("/secret-admin-portal/login");
+          path.startsWith("/secret-admin-portal/login") ||
+          path.startsWith("/admin/login");
 
         if (messageKey === "auth.account_pending") {
           const email = readRequestEmail(error.config);
@@ -178,7 +180,9 @@ api.interceptors.response.use(
             window.location.replace("/account-pending/");
           }
         } else if (!isAuthPage) {
-          if (messageKey === "auth.account_suspended") {
+          if (isAdminSurface) {
+            window.location.replace("/secret-admin-portal/login/");
+          } else if (messageKey === "auth.account_suspended") {
             window.location.replace("/login/?reason=suspended");
           } else {
             const next = encodeURIComponent(path + window.location.search);
