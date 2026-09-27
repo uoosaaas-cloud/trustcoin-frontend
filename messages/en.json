@@ -685,8 +685,11 @@
       "empty": "No pending withdrawal requests.",
       "approve": "Approve",
       "reject": "Reject",
-      "approved": "Withdrawal approved and marked completed.",
+      "approved": "Withdrawal approved. The amount stays out of available and total, and the request remains in the successful withdrawals list.",
       "rejected": "Withdrawal rejected. Amount refunded to available balance.",
+      "completedTitle": "Successful withdrawals",
+      "completedEmpty": "No completed withdrawals yet.",
+      "completedBadge": "Paid",
       "availableNow": "Available: {amount} USDT",
       "copyAddress": "Copy address",
       "copied": "Copied!",
@@ -696,7 +699,8 @@
         "network": "Network",
         "address": "Wallet address",
         "date": "Requested",
-        "actions": "Actions"
+        "actions": "Actions",
+        "status": "Status"
       },
       "errors": {
         "actionFailed": "Could not update this withdrawal. Please try again."

@@ -104,7 +104,7 @@ export interface AdminPendingWithdrawal {
   user_id: string;
   amount: string;
   type: "WITHDRAWAL";
-  status: "PENDING";
+  status: "PENDING" | "COMPLETED";
   payment_address: string | null;
   network: string | null;
   note: string | null;
@@ -249,6 +249,11 @@ export async function rejectAdminReferral(rewardId: string) {
 
 export async function getPendingWithdrawals() {
   const { data } = await api.get<ApiSuccessResponse<AdminPendingWithdrawal[]>>("/admin/withdrawals/pending");
+  return data;
+}
+
+export async function getCompletedWithdrawals() {
+  const { data } = await api.get<ApiSuccessResponse<AdminPendingWithdrawal[]>>("/admin/withdrawals/completed");
   return data;
 }
 

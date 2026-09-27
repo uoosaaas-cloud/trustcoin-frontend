@@ -6,6 +6,7 @@ import { AdminNav } from "@/components/AdminNav";
 import { useRequireAdmin } from "@/hooks/useRequireAdmin";
 import {
   approveWithdrawal,
+  getCompletedWithdrawals,
   getPendingWithdrawals,
   rejectWithdrawal,
   type AdminPendingWithdrawal,
@@ -19,6 +20,7 @@ export default function AdminWithdrawalsPage() {
   const tCommon = useTranslations("common");
 
   const [rows, setRows] = useState<AdminPendingWithdrawal[]>([]);
+  const [completed, setCompleted] = useState<AdminPendingWithdrawal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -28,8 +30,12 @@ export default function AdminWithdrawalsPage() {
   async function load() {
     setErrorMessage(null);
     try {
-      const response = await getPendingWithdrawals();
-      setRows(response.data);
+      const [pendingRes, completedRes] = await Promise.all([
+        getPendingWithdrawals(),
+        getCompletedWithdrawals(),
+      ]);
+      setRows(pendingRes.data);
+      setCompleted(completedRes.data);
     } catch (error) {
       setErrorMessage(getApiErrorMessage(error, tCommon("unknownError")));
     } finally {
@@ -228,6 +234,54 @@ export default function AdminWithdrawalsPage() {
             </table>
           </div>
         )}
+
+        <section className="mt-10">
+          <h2 className="text-lg font-semibold text-white">{t("completedTitle")}</h2>
+          {isLoading ? (
+            <div className="mt-4 h-24 animate-pulse rounded-2xl border border-white/10 bg-white/5" />
+          ) : completed.length === 0 ? (
+            <p className="mt-4 text-sm text-slate-400">{t("completedEmpty")}</p>
+          ) : (
+            <div className="table-surface mt-4">
+              <table className="w-full min-w-[720px] text-left text-sm">
+                <thead className="border-b border-white/10 bg-white/[0.03] text-xs uppercase tracking-wider text-slate-400">
+                  <tr>
+                    <th className="px-4 py-3 font-medium">{t("table.user")}</th>
+                    <th className="px-4 py-3 font-medium">{t("table.amount")}</th>
+                    <th className="px-4 py-3 font-medium">{t("table.network")}</th>
+                    <th className="px-4 py-3 font-medium">{t("table.address")}</th>
+                    <th className="px-4 py-3 font-medium">{t("table.date")}</th>
+                    <th className="px-4 py-3 font-medium">{t("table.status")}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {completed.map((row) => (
+                    <tr key={row.id} className="text-slate-300">
+                      <td className="px-4 py-3 font-medium text-white">{row.user.email}</td>
+                      <td className="whitespace-nowrap px-4 py-3 font-semibold text-cyan-300">
+                        {formatUsdt(row.amount)} USDT
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-3 font-mono text-xs text-cyan-100">
+                        {row.network ?? "—"}
+                      </td>
+                      <td className="max-w-[240px] truncate px-4 py-3 font-mono text-xs text-slate-400" dir="ltr">
+                        {row.payment_address ?? "—"}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-3 text-xs text-slate-400">
+                        {formatDateTime(row.created_at)}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-300">
+                          {t("completedBadge")}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
       </main>
     </div>
   );
