@@ -764,7 +764,7 @@
     "referrals": {
       "eyebrow": "Growth network",
       "title": "Referrals Management",
-      "subtitle": "Audit every referral commission (25% of package profit). Release funds only after the referred package completes.",
+      "subtitle": "Each card shows the referrer's email and everyone who registered with their link. Commission is 25% of package profit and is released only after the package completes and an admin approves.",
       "stats": {
         "referrers": "Active referrers",
         "referred": "Referred users",
@@ -775,6 +775,26 @@
       "auditTitle": "Referral commission audit",
       "auditSubtitle": "Full trail of referrer → referee ties, package profit, and 25% commission status.",
       "emptyAudit": "No referral commissions yet.",
+      "cardsTitle": "Referral cards",
+      "cardsSubtitle": "The referrer's email, then everyone who registered with their link.",
+      "emptyCards": "No referrals yet.",
+      "referrerLabel": "Referrer",
+      "registeredLabel": "Registered with this link",
+      "registeredCount": "{count} registered",
+      "codeLabel": "Referral code",
+      "noPackage": "No package yet",
+      "accountStatus": {
+        "PENDING": "Awaiting approval",
+        "ACTIVE": "Active",
+        "BLOCKED": "Blocked"
+      },
+      "rewardStatus": {
+        "PENDING_PACKAGE_ACTIVE": "Package active — commission locked",
+        "PACKAGE_COMPLETED_AWAITING_ADMIN": "Package complete — awaiting approval",
+        "APPROVED_RELEASED": "Commission released",
+        "REJECTED": "Commission rejected",
+        "NONE": "Registered only"
+      },
       "noWallet": "No deposit wallet yet",
       "regSuccess": "Registration: Success",
       "regPendingKyc": "Registration: Pending KYC",

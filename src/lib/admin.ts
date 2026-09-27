@@ -82,6 +82,27 @@ export interface AdminReferralAuditRow {
   };
 }
 
+export interface AdminReferrerCardReferee {
+  id: string;
+  email: string;
+  status: string;
+  registration_status: "SUCCESS" | "PENDING_KYC";
+  created_at: string;
+  reward_status: string | null;
+  bonus_amount: string | null;
+  package_name: string | null;
+}
+
+export interface AdminReferrerCard {
+  id: string;
+  email: string;
+  referral_code: string;
+  referredCount: number;
+  commissionEarned: string;
+  pendingCommission: string;
+  referees: AdminReferrerCardReferee[];
+}
+
 export interface AdminReferralOverview {
   totalReferrers: number;
   totalReferredUsers: number;
@@ -96,6 +117,7 @@ export interface AdminReferralOverview {
     commissionEarned: string;
     pendingCommission: string;
   }>;
+  referrerCards?: AdminReferrerCard[];
   auditRows: AdminReferralAuditRow[];
 }
 

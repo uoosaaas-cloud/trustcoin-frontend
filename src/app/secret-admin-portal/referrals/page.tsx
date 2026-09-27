@@ -14,12 +14,13 @@ import {
 import { getApiErrorMessage } from "@/lib/api";
 import { formatDate, formatUsdt } from "@/lib/format";
 
-function StatusBadge({ status }: { status: string }) {
+function StatusBadge({ status, label }: { status: string; label: string }) {
   const styles: Record<string, string> = {
-    PENDING_PACKAGE_ACTIVE: "border-amber-200 bg-amber-50 text-amber-200",
+    PENDING_PACKAGE_ACTIVE: "border-amber-400/30 bg-amber-400/10 text-amber-200",
     PACKAGE_COMPLETED_AWAITING_ADMIN: "border-cyan-400/30 bg-cyan-400/10 text-cyan-200",
     APPROVED_RELEASED: "border-emerald-400/30 bg-emerald-500/10 text-emerald-200",
     REJECTED: "border-rose-400/30 bg-rose-500/10 text-rose-300",
+    NONE: "border-white/10 bg-white/[0.03] text-slate-300",
   };
 
   return (
@@ -28,9 +29,43 @@ function StatusBadge({ status }: { status: string }) {
         styles[status] ?? "border-white/10 bg-white/[0.03] text-slate-400"
       }`}
     >
-      {status}
+      {label}
     </span>
   );
+}
+
+function accountStatusLabel(
+  t: (key: "accountStatus.PENDING" | "accountStatus.ACTIVE" | "accountStatus.BLOCKED") => string,
+  status: string
+): string {
+  if (status === "ACTIVE") return t("accountStatus.ACTIVE");
+  if (status === "BLOCKED") return t("accountStatus.BLOCKED");
+  return t("accountStatus.PENDING");
+}
+
+function rewardStatusLabel(
+  t: (
+    key:
+      | "rewardStatus.PENDING_PACKAGE_ACTIVE"
+      | "rewardStatus.PACKAGE_COMPLETED_AWAITING_ADMIN"
+      | "rewardStatus.APPROVED_RELEASED"
+      | "rewardStatus.REJECTED"
+      | "rewardStatus.NONE"
+  ) => string,
+  status: string | null
+): string {
+  switch (status) {
+    case "PENDING_PACKAGE_ACTIVE":
+      return t("rewardStatus.PENDING_PACKAGE_ACTIVE");
+    case "PACKAGE_COMPLETED_AWAITING_ADMIN":
+      return t("rewardStatus.PACKAGE_COMPLETED_AWAITING_ADMIN");
+    case "APPROVED_RELEASED":
+      return t("rewardStatus.APPROVED_RELEASED");
+    case "REJECTED":
+      return t("rewardStatus.REJECTED");
+    default:
+      return t("rewardStatus.NONE");
+  }
 }
 
 export default function AdminReferralsPage() {
@@ -144,6 +179,78 @@ export default function AdminReferralsPage() {
               </div>
             ) : null}
 
+            <section className="space-y-4">
+              <div>
+                <h2 className="text-lg font-semibold text-white">{t("cardsTitle")}</h2>
+                <p className="mt-1 text-sm text-slate-400">{t("cardsSubtitle")}</p>
+              </div>
+              {(overview.referrerCards ?? []).length === 0 ? (
+                <p className="text-sm text-slate-400">{t("emptyCards")}</p>
+              ) : (
+                <div className="grid gap-4 lg:grid-cols-2">
+                  {(overview.referrerCards ?? []).map((card) => (
+                    <article key={card.id} className="card-surface rounded-3xl p-4 sm:p-5">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-cyan-300">
+                        {t("referrerLabel")}
+                      </p>
+                      <p className="mt-1 break-all text-base font-semibold text-white" dir="ltr">
+                        {card.email}
+                      </p>
+                      <p className="mt-2 text-xs text-slate-400">
+                        {t("codeLabel")}:{" "}
+                        <span className="font-mono text-slate-200" dir="ltr">
+                          {card.referral_code}
+                        </span>
+                      </p>
+                      <p className="mt-1 text-xs text-slate-400">
+                        {t("registeredCount", { count: card.referredCount })}
+                        {" · "}
+                        {t("stats.pending")}: {formatUsdt(card.pendingCommission)} USDT
+                        {" · "}
+                        {t("stats.commission")}: {formatUsdt(card.commissionEarned)} USDT
+                      </p>
+
+                      <div className="mt-4 border-t border-white/10 pt-3">
+                        <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                          {t("registeredLabel")}
+                        </p>
+                        <ul className="mt-3 space-y-3">
+                          {card.referees.map((referee) => (
+                            <li
+                              key={referee.id}
+                              className="rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-3"
+                            >
+                              <p className="break-all text-sm font-medium text-white" dir="ltr">
+                                {referee.email}
+                              </p>
+                              <p className="mt-1 text-[11px] text-slate-400">
+                                {accountStatusLabel(t, referee.status)} · {formatDate(referee.created_at)}
+                              </p>
+                              <div className="mt-2 flex flex-wrap items-center gap-2">
+                                <StatusBadge
+                                  status={referee.reward_status ?? "NONE"}
+                                  label={rewardStatusLabel(t, referee.reward_status)}
+                                />
+                                <span className="text-[11px] text-slate-400">
+                                  {referee.package_name
+                                    ? `${referee.package_name}${
+                                        referee.bonus_amount
+                                          ? ` · ${formatUsdt(referee.bonus_amount)} USDT`
+                                          : ""
+                                      }`
+                                    : t("noPackage")}
+                                </span>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              )}
+            </section>
+
             <section className="card-surface rounded-3xl p-4 sm:p-5">
               <h2 className="text-lg font-semibold text-white">{t("auditTitle")}</h2>
               <p className="mt-1 text-sm text-slate-400">{t("auditSubtitle")}</p>
@@ -164,7 +271,7 @@ export default function AdminReferralsPage() {
                         <th className="px-3 py-2 font-medium">{t("table.actions")}</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100">
+                    <tbody className="divide-y divide-white/10">
                       {overview.auditRows.map((row) => (
                         <tr key={row.id} className="align-top hover:bg-white/5/80">
                           <td className="px-3 py-3">
@@ -205,7 +312,7 @@ export default function AdminReferralsPage() {
                             </p>
                           </td>
                           <td className="px-3 py-3">
-                            <StatusBadge status={row.status} />
+                            <StatusBadge status={row.status} label={rewardStatusLabel(t, row.status)} />
                           </td>
                           <td className="px-3 py-3">
                             <div className="flex flex-col gap-2">
