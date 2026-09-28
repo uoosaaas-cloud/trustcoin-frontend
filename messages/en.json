@@ -144,7 +144,7 @@
     "submit": "Send reset link",
     "submitting": "Sending...",
     "successTitle": "Check your email",
-    "successBody": "If an account exists for that address, a reset link has been sent. The link expires in about 30 minutes.",
+    "successBody": "If an account exists for that address, we sent a message titled “TrustCoin password reset”. It contains a link, not a numeric code. Check the inbox and the spam folder. The link expires in about 30 minutes.",
     "devLinkNotice": "Development mode — open this reset link:",
     "backToLogin": "Back to login",
     "errors": {
