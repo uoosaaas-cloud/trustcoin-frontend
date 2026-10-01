@@ -336,6 +336,8 @@ export interface AdminDepositMonitoring {
     created_at: string;
     user: { id: string; email: string; status: string };
     depositAddress: string | null;
+    depositAddressId: string | null;
+    awaitingEnergyRetry: boolean;
   }>;
   subWallets: Array<{
     id: string;

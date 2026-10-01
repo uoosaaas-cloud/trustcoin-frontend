@@ -20,6 +20,7 @@ export default function AdminDepositsPage() {
   const [data, setData] = useState<AdminDepositMonitoring | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSweeping, setIsSweeping] = useState(false);
+  const [retryingId, setRetryingId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -45,6 +46,27 @@ export default function AdminDepositsPage() {
     return () => window.clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready]);
+
+  async function handleRetryDeposit(claimId: string, depositAddressId: string) {
+    setRetryingId(claimId);
+    setErrorMessage(null);
+    setSuccessMessage(null);
+    try {
+      const response = await triggerAdminDepositSweep({ depositAddressId, force: true });
+      const summary = response.data as { results?: Array<{ status?: string }> } | undefined;
+      const status = summary?.results?.[0]?.status;
+      if (status === "SUCCESS") {
+        setSuccessMessage(t("retryDone"));
+      } else {
+        setErrorMessage(t("retryFailed"));
+      }
+      await load();
+    } catch (error) {
+      setErrorMessage(getApiErrorMessage(error, tCommon("unknownError")));
+    } finally {
+      setRetryingId(null);
+    }
+  }
 
   async function handleSweep(dryRun: boolean) {
     setIsSweeping(true);
@@ -155,7 +177,25 @@ export default function AdminDepositsPage() {
                   <td className="max-w-[180px] truncate px-3 py-2 font-mono text-xs" dir="ltr">
                     {row.depositAddress ?? "—"}
                   </td>
-                  <td className="px-3 py-2 text-xs">{row.sweep_tx_hash ? t("sweptLabel") : row.status}</td>
+                  <td className="px-3 py-2 text-xs">
+                    {row.sweep_tx_hash ? (
+                      t("sweptLabel")
+                    ) : row.awaitingEnergyRetry && row.depositAddressId ? (
+                      <div className="flex flex-col items-start gap-1">
+                        <span className="text-amber-200">{t("awaitingEnergy")}</span>
+                        <button
+                          type="button"
+                          disabled={retryingId === row.id}
+                          onClick={() => void handleRetryDeposit(row.id, row.depositAddressId!)}
+                          className="rounded-lg bg-brand-600 px-2.5 py-1 text-xs font-semibold text-white disabled:opacity-50"
+                        >
+                          {retryingId === row.id ? t("retrying") : t("retryDeposit")}
+                        </button>
+                      </div>
+                    ) : (
+                      row.status
+                    )}
+                  </td>
                   <td className="px-3 py-2 text-xs text-slate-400">{formatDate(row.created_at)}</td>
                 </>
               )}
