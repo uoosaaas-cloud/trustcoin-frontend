@@ -95,8 +95,11 @@ export default function AdminUsersPage() {
 
     try {
       if (action === "approve") {
+        const current = users.find((user) => user.id === userId);
         await approveAdminUser(userId);
-        setSuccessMessage(t("messages.approved"));
+        setSuccessMessage(
+          current?.status === "BLOCKED" ? t("messages.reactivated") : t("messages.approved")
+        );
       } else if (action === "block") {
         await blockAdminUser(userId);
         setSuccessMessage(t("messages.blocked"));
@@ -274,7 +277,7 @@ export default function AdminUsersPage() {
                             onClick={() => void runAction(user.id, "approve")}
                             className="rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"
                           >
-                            {t("approve")}
+                            {user.status === "BLOCKED" ? t("reactivate") : t("approve")}
                           </button>
                         ) : null}
 

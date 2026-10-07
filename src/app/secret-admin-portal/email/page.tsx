@@ -11,14 +11,29 @@ import {
 } from "@/lib/admin";
 import { getApiErrorMessage } from "@/lib/api";
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const MAX_RECIPIENTS = 30;
+
+function parseExternalEmails(value: string): string[] {
+  const seen = new Set<string>();
+  const emails: string[] = [];
+  for (const part of value.split(/[\s,;]+/)) {
+    const email = part.trim().toLowerCase();
+    if (!email || seen.has(email)) continue;
+    seen.add(email);
+    emails.push(email);
+  }
+  return emails;
+}
+
 export default function AdminSendEmailPage() {
   const ready = useRequireAdmin();
   const t = useTranslations("admin.email");
   const tCommon = useTranslations("common");
 
   const [users, setUsers] = useState<AdminUserListItem[]>([]);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [email, setEmail] = useState("");
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [externalText, setExternalText] = useState("");
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
   const [search, setSearch] = useState("");
@@ -33,10 +48,9 @@ export default function AdminSendEmailPage() {
     return users.filter((user) => user.email.toLowerCase().includes(q));
   }, [users, search]);
 
-  const selectedUser = useMemo(
-    () => users.find((user) => user.id === selectedId) ?? null,
-    [users, selectedId]
-  );
+  const externalEmails = useMemo(() => parseExternalEmails(externalText), [externalText]);
+  const invalidExternal = externalEmails.filter((email) => !EMAIL_REGEX.test(email));
+  const recipientCount = selectedIds.length + externalEmails.length;
 
   useEffect(() => {
     if (!ready) return;
@@ -63,15 +77,21 @@ export default function AdminSendEmailPage() {
     };
   }, [ready, tCommon]);
 
-  function selectUser(user: AdminUserListItem) {
-    setSelectedId(user.id);
-    setEmail(user.email);
+  function toggleUser(userId: string) {
+    setSelectedIds((current) =>
+      current.includes(userId) ? current.filter((id) => id !== userId) : [...current, userId]
+    );
   }
 
-  function handleEmailChange(value: string) {
-    setEmail(value);
-    const match = users.find((user) => user.email.toLowerCase() === value.trim().toLowerCase());
-    setSelectedId(match ? match.id : null);
+  function toggleVisible() {
+    const visibleIds = visibleUsers.map((user) => user.id);
+    const allSelected = visibleIds.every((id) => selectedIds.includes(id));
+    setSelectedIds((current) => {
+      if (allSelected) {
+        return current.filter((id) => !visibleIds.includes(id));
+      }
+      return Array.from(new Set([...current, ...visibleIds]));
+    });
   }
 
   async function handleSubmit(event: React.FormEvent) {
@@ -80,12 +100,19 @@ export default function AdminSendEmailPage() {
     setErrorMessage(null);
     setSuccessMessage(null);
 
-    const trimmedEmail = email.trim();
     const trimmedSubject = subject.trim();
     const trimmedBody = body.trim();
 
-    if (!selectedId && !trimmedEmail) {
+    if (selectedIds.length === 0 && externalEmails.length === 0) {
       setErrorMessage(t("errors.userRequired"));
+      return;
+    }
+    if (invalidExternal.length > 0) {
+      setErrorMessage(t("errors.invalidExternal"));
+      return;
+    }
+    if (recipientCount > MAX_RECIPIENTS) {
+      setErrorMessage(t("errors.tooMany"));
       return;
     }
     if (!trimmedSubject) {
@@ -100,12 +127,21 @@ export default function AdminSendEmailPage() {
     setIsSending(true);
     try {
       const response = await sendAdminUserEmail({
-        userId: selectedId ?? undefined,
-        email: selectedId ? undefined : trimmedEmail,
+        userIds: selectedIds,
+        externalEmails,
         subject: trimmedSubject,
         body: trimmedBody,
       });
-      setSuccessMessage(t("success", { email: response.data.to }));
+      const failed = response.data.failed ?? [];
+      setSuccessMessage(
+        t("successBatch", {
+          sent: response.data.sent?.length ?? (response.data.to ? 1 : 0),
+          failed: failed.length,
+        })
+      );
+      if (failed.length > 0) {
+        setErrorMessage(t("partialFailed", { emails: failed.map((item) => item.email).join(", ") }));
+      }
       setSubject("");
       setBody("");
     } catch (error) {
@@ -116,6 +152,9 @@ export default function AdminSendEmailPage() {
   }
 
   if (!ready) return null;
+
+  const visibleAllSelected =
+    visibleUsers.length > 0 && visibleUsers.every((user) => selectedIds.includes(user.id));
 
   return (
     <div className="page-shell">
@@ -140,21 +179,17 @@ export default function AdminSendEmailPage() {
 
         <form onSubmit={handleSubmit} className="grid gap-6 lg:grid-cols-[1fr_320px]">
           <section className="card-surface rounded-3xl p-5">
-            <label className="block text-sm font-medium text-slate-200" htmlFor="admin-email-to">
-              {t("emailLabel")}
+            <label className="block text-sm font-medium text-slate-200" htmlFor="admin-email-external">
+              {t("externalLabel")}
             </label>
-            <input
-              id="admin-email-to"
-              type="email"
-              value={email}
-              onChange={(e) => handleEmailChange(e.target.value)}
-              placeholder={t("emailPlaceholder")}
-              className="input-surface mt-1.5 py-3"
-              autoComplete="off"
+            <textarea
+              id="admin-email-external"
+              value={externalText}
+              onChange={(event) => setExternalText(event.target.value)}
+              placeholder={t("externalPlaceholder")}
+              className="input-surface mt-1.5 min-h-[120px] py-3"
             />
-            {selectedUser ? (
-              <p className="mt-2 text-xs text-slate-400">{t("selected", { email: selectedUser.email })}</p>
-            ) : null}
+            <p className="mt-2 text-xs text-slate-400">{t("externalHint")}</p>
 
             <label className="mt-4 block text-sm font-medium text-slate-200" htmlFor="admin-email-subject">
               {t("subjectLabel")}
@@ -163,7 +198,7 @@ export default function AdminSendEmailPage() {
               id="admin-email-subject"
               type="text"
               value={subject}
-              onChange={(e) => setSubject(e.target.value)}
+              onChange={(event) => setSubject(event.target.value)}
               placeholder={t("subjectPlaceholder")}
               className="input-surface mt-1.5 py-3"
               maxLength={200}
@@ -175,11 +210,13 @@ export default function AdminSendEmailPage() {
             <textarea
               id="admin-email-body"
               value={body}
-              onChange={(e) => setBody(e.target.value)}
+              onChange={(event) => setBody(event.target.value)}
               placeholder={t("bodyPlaceholder")}
               className="input-surface mt-1.5 min-h-[220px] py-3"
               maxLength={20000}
             />
+
+            <p className="mt-3 text-xs text-slate-400">{t("recipientCount", { count: recipientCount })}</p>
 
             <button
               type="submit"
@@ -191,11 +228,21 @@ export default function AdminSendEmailPage() {
           </section>
 
           <section className="card-surface rounded-3xl p-5">
-            <h2 className="text-lg font-semibold text-white">{t("usersTitle")}</h2>
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-lg font-semibold text-white">{t("usersTitle")}</h2>
+              <button
+                type="button"
+                onClick={toggleVisible}
+                disabled={visibleUsers.length === 0}
+                className="text-xs font-semibold text-cyan-200 disabled:opacity-40"
+              >
+                {visibleAllSelected ? t("clearVisible") : t("selectVisible")}
+              </button>
+            </div>
             <input
               type="search"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(event) => setSearch(event.target.value)}
               placeholder={t("searchPlaceholder")}
               className="input-surface mb-4 mt-3 py-2.5"
             />
@@ -206,16 +253,15 @@ export default function AdminSendEmailPage() {
             ) : (
               <ul className="max-h-[480px] space-y-2 overflow-y-auto">
                 {visibleUsers.map((user) => {
-                  const checked = selectedId === user.id;
+                  const checked = selectedIds.includes(user.id);
                   return (
                     <li key={user.id}>
                       <label className="flex cursor-pointer items-center justify-between gap-3 rounded-2xl border border-white/10 px-3 py-2.5 hover:bg-white/[0.04]">
                         <span className="flex items-center gap-3">
                           <input
-                            type="radio"
-                            name="admin-email-user"
+                            type="checkbox"
                             checked={checked}
-                            onChange={() => selectUser(user)}
+                            onChange={() => toggleUser(user.id)}
                           />
                           <span>
                             <span className="block text-sm font-medium text-white">{user.email}</span>

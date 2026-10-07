@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { AboutPlatformModal } from "@/components/AboutPlatformModal";
+import { DisableAccountButton } from "@/components/DisableAccountButton";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { TrustCoinLogo } from "@/components/TrustCoinLogo";
 import { useWallet } from "@/contexts/WalletContext";
@@ -100,6 +101,8 @@ export function AppNav() {
 
             <LanguageSwitcher />
 
+            <DisableAccountButton className="hidden rounded-xl border border-rose-400/30 bg-rose-500/10 px-3 py-1.5 text-xs font-medium text-rose-200 transition hover:bg-rose-500/20 sm:inline-flex" />
+
             <button
               type="button"
               onClick={handleLogout}
@@ -169,6 +172,7 @@ export function AppNav() {
               >
                 {t("support")}
               </a>
+              <DisableAccountButton className="rounded-xl px-3 py-2.5 text-start text-sm font-medium text-rose-200 hover:bg-rose-500/10" />
               <button
                 type="button"
                 onClick={handleLogout}

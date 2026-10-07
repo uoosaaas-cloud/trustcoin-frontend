@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { AppNav } from "@/components/AppNav";
+import { DashboardAnnouncement } from "@/components/DashboardAnnouncement";
 import { AuthLoading } from "@/components/AuthLoading";
 import { MarketOverview } from "@/components/MarketOverview";
 import { MyInvestments } from "@/components/MyInvestments";
@@ -142,6 +143,7 @@ export default function DashboardPage() {
   return (
     <div className="page-shell flex flex-col">
       <AppNav />
+      <DashboardAnnouncement />
 
       <main className="relative z-10 mx-auto w-full max-w-6xl flex-1 px-4 pb-20 pt-7 sm:px-6">
         {/* Hero header */}

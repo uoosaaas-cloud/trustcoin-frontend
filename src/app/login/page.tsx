@@ -42,9 +42,9 @@ function LoginForm() {
     if (reason === "session") {
       setErrorMessage(t("sessionExpired"));
     } else if (reason === "suspended") {
-      setErrorMessage(t("accountSuspended"));
+      router.replace("/account-disabled");
     }
-  }, [searchParams, t]);
+  }, [searchParams, t, router]);
 
   const isEmailValid = email.length === 0 || EMAIL_REGEX.test(email.trim());
 
@@ -92,6 +92,10 @@ function LoginForm() {
       if (key === "auth.account_pending") {
         pushToast(getApiErrorMessage(error, t("errors.generic")), "info");
         router.push("/account-pending");
+        return;
+      }
+      if (key === "auth.account_suspended") {
+        router.push("/account-disabled");
         return;
       }
       setErrorMessage(getApiErrorMessage(error, t("errors.generic")));

@@ -541,7 +541,8 @@
       "users": "Users",
       "packages": "Packages",
       "referrals": "Referrals",
-      "logout": "Log out"
+      "logout": "Log out",
+      "announcements": "Announcement"
     },
     "login": {
       "eyebrow": "Staff access",
@@ -616,9 +617,9 @@
     },
     "email": {
       "eyebrow": "Support",
-      "title": "Send Email to User",
-      "subtitle": "Email a registered user from TrustCoin Admin. The message uses the same mail system as gift notifications.",
-      "usersTitle": "Choose a user",
+      "title": "Send email",
+      "subtitle": "Select more than one user, or enter addresses that are not registered. Each message is sent on its own.",
+      "usersTitle": "Choose users",
       "searchPlaceholder": "Search by email…",
       "emailLabel": "Recipient email",
       "emailPlaceholder": "user@example.com",
@@ -633,11 +634,21 @@
       "sending": "Sending…",
       "success": "Email sent to {email}.",
       "errors": {
-        "userRequired": "Select a user or enter their registered email.",
+        "userRequired": "Select at least one user or enter an email.",
         "subjectRequired": "Enter a subject.",
         "bodyRequired": "Enter the message body.",
-        "generic": "Could not send the email. Please try again."
-      }
+        "generic": "Could not send the email. Please try again.",
+        "invalidExternal": "One of the outside addresses is not valid.",
+        "tooMany": "The limit is 30 recipients per message."
+      },
+      "externalLabel": "Addresses outside the platform",
+      "externalPlaceholder": "name@example.com",
+      "externalHint": "One email per line. The address does not need an account.",
+      "selectVisible": "Select visible",
+      "clearVisible": "Clear visible",
+      "recipientCount": "Recipients: {count}",
+      "successBatch": "Sent {sent}. Failed {failed}.",
+      "partialFailed": "Could not send to: {emails}"
     },
     "trades": {
       "eyebrow": "Desk signals",
@@ -657,7 +668,10 @@
         "submit": "Publish trade",
         "submitting": "Publishing…"
       },
-      "side": { "buy": "Buy", "sell": "Sell" },
+      "side": {
+        "buy": "Buy",
+        "sell": "Sell"
+      },
       "outcome": {
         "profitable": "Profitable",
         "loss": "Loss",
@@ -671,8 +685,15 @@
         "status": "Visibility",
         "actions": "Actions"
       },
-      "status": { "active": "Visible", "hidden": "Hidden" },
-      "actions": { "hide": "Hide", "show": "Show", "delete": "Delete" },
+      "status": {
+        "active": "Visible",
+        "hidden": "Hidden"
+      },
+      "actions": {
+        "hide": "Hide",
+        "show": "Show",
+        "delete": "Delete"
+      },
       "errors": {
         "invalid": "Enter a valid symbol and amount.",
         "generic": "Could not save the trade. Please try again."
@@ -749,7 +770,8 @@
         "approved": "User account approved and activated.",
         "blocked": "User account blocked.",
         "deleted": "User deleted.",
-        "idReuploadSent": "Official re-upload email sent to {email}."
+        "idReuploadSent": "Official re-upload email sent to {email}.",
+        "reactivated": "The account has been reactivated."
       },
       "errors": {
         "actionFailed": "Could not update this user. Please try again."
@@ -759,7 +781,8 @@
         "amount": "Capital",
         "daily": "Daily %",
         "end": "Ends"
-      }
+      },
+      "reactivate": "Reactivate account"
     },
     "referrals": {
       "eyebrow": "Growth network",
@@ -879,6 +902,43 @@
         "swept": "Last swept",
         "from": "From"
       }
+    },
+    "announcement": {
+      "eyebrow": "Dashboard",
+      "title": "User announcement",
+      "subtitle": "A title and short text shown when a user opens the dashboard. Closing it hides it until the text changes.",
+      "titleLabel": "Title",
+      "bodyLabel": "Content",
+      "activeLabel": "Show the announcement to users",
+      "hint": "Turning this off hides it from everyone. Changing the title or content shows it again to people who closed it.",
+      "save": "Save announcement",
+      "saving": "Saving…",
+      "published": "Announcement published. It will show when users open the dashboard.",
+      "savedHidden": "Announcement saved and hidden from users.",
+      "errors": {
+        "titleRequired": "Enter a title.",
+        "bodyRequired": "Enter the announcement text.",
+        "generic": "Could not save the announcement. Please try again."
+      }
     }
+  },
+  "accountDisabled": {
+    "eyebrow": "Account",
+    "title": "Your account is disabled",
+    "body": "Your account is disabled. Please contact support to restore it. Your balance and records stay saved.",
+    "support": "Contact support",
+    "backToLogin": "Back to sign in"
+  },
+  "disableAccount": {
+    "button": "Disable my account",
+    "title": "Disable account",
+    "body": "After you confirm, you will not be able to open the dashboard until support reactivates the account. Your balance and packages stay saved.",
+    "cancel": "Cancel",
+    "confirm": "Disable account",
+    "working": "Disabling…"
+  },
+  "announcement": {
+    "eyebrow": "Announcement",
+    "close": "Close"
   }
 }

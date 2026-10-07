@@ -433,16 +433,46 @@ export async function distributeAdminGifts(payload: {
   return data;
 }
 
+export interface AdminEmailSendResult {
+  to: string;
+  subject: string;
+  sent: Array<{ email: string; kind: "user" | "external" }>;
+  failed: Array<{ email: string; reason: string }>;
+}
+
+export interface AdminAnnouncement {
+  id: string;
+  title: string;
+  body: string;
+  isActive: boolean;
+  updatedAt: string;
+}
+
+export async function getAdminAnnouncement() {
+  const { data } = await api.get<ApiSuccessResponse<AdminAnnouncement | null>>("/admin/announcement");
+  return data;
+}
+
+export async function saveAdminAnnouncement(payload: { title: string; body: string; isActive: boolean }) {
+  const { data } = await api.put<ApiSuccessResponse<AdminAnnouncement>>("/admin/announcement", payload);
+  return data;
+}
+
 export async function sendAdminUserEmail(payload: {
-  userId?: string;
-  email?: string;
+  userIds?: string[];
+  externalEmails?: string[];
   subject: string;
   body: string;
 }) {
-  const { data } = await api.post<ApiSuccessResponse<{ to: string; subject: string }>>(
+  const { data } = await api.post<ApiSuccessResponse<AdminEmailSendResult>>(
     "/admin/emails",
-    payload,
-    { timeout: 60000 }
+    {
+      userIds: payload.userIds ?? [],
+      externalEmails: payload.externalEmails ?? [],
+      subject: payload.subject,
+      body: payload.body,
+    },
+    { timeout: 120000 }
   );
   return data;
 }

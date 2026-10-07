@@ -166,6 +166,7 @@ api.interceptors.response.use(
           path.startsWith("/reset-password") ||
           path.startsWith("/already-registered") ||
           path.startsWith("/account-pending") ||
+          path.startsWith("/account-disabled") ||
           path.startsWith("/secret-admin-portal/login") ||
           path.startsWith("/admin/login");
 
@@ -183,7 +184,7 @@ api.interceptors.response.use(
           if (isAdminSurface) {
             window.location.replace("/secret-admin-portal/login/");
           } else if (messageKey === "auth.account_suspended") {
-            window.location.replace("/login/?reason=suspended");
+            window.location.replace("/account-disabled/");
           } else {
             const next = encodeURIComponent(path + window.location.search);
             window.location.replace(`/login/?next=${next}&reason=session`);
