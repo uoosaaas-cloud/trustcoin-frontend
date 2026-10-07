@@ -28,6 +28,11 @@ export default function AdminUsersPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [previewUser, setPreviewUser] = useState<AdminUserListItem | null>(null);
   const [actionUserId, setActionUserId] = useState<string | null>(null);
+  const [pendingConfirm, setPendingConfirm] = useState<{
+    userId: string;
+    email: string;
+    action: "reupload" | "block" | "delete";
+  } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -80,15 +85,7 @@ export default function AdminUsersPage() {
     setQuery(search.trim());
   }
 
-  async function runAction(
-    userId: string,
-    action: "approve" | "block" | "delete",
-    confirmMessage?: string
-  ) {
-    if (confirmMessage && !window.confirm(confirmMessage)) {
-      return;
-    }
-
+  async function runAction(userId: string, action: "approve" | "block" | "delete") {
     setActionUserId(userId);
     setErrorMessage(null);
     setSuccessMessage(null);
@@ -116,15 +113,13 @@ export default function AdminUsersPage() {
     }
   }
 
-  async function requestIdReupload(userId: string, email: string) {
-    if (!window.confirm(t("confirmRequestId", { email }))) {
-      return;
-    }
+  async function requestIdReupload(userId: string) {
     setActionUserId(userId);
     setErrorMessage(null);
     setSuccessMessage(null);
     try {
       await requestAdminIdReupload(userId);
+      const email = users.find((user) => user.id === userId)?.email ?? "";
       setSuccessMessage(t("messages.idReuploadSent", { email }));
     } catch (error) {
       setErrorMessage(getApiErrorMessage(error, t("errors.actionFailed")));
@@ -263,7 +258,9 @@ export default function AdminUsersPage() {
                           <button
                             type="button"
                             disabled={busy}
-                            onClick={() => void requestIdReupload(user.id, user.email)}
+                            onClick={() =>
+                              setPendingConfirm({ userId: user.id, email: user.email, action: "reupload" })
+                            }
                             className="rounded-xl border border-cyan-300/30 bg-cyan-400/10 px-3 py-2 text-xs font-semibold text-cyan-200 disabled:opacity-50"
                           >
                             {t("requestIdPhoto")}
@@ -285,7 +282,9 @@ export default function AdminUsersPage() {
                           <button
                             type="button"
                             disabled={busy}
-                            onClick={() => void runAction(user.id, "block")}
+                            onClick={() =>
+                              setPendingConfirm({ userId: user.id, email: user.email, action: "block" })
+                            }
                             className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-200 disabled:opacity-50"
                           >
                             {t("block")}
@@ -296,7 +295,9 @@ export default function AdminUsersPage() {
                           <button
                             type="button"
                             disabled={busy}
-                            onClick={() => void runAction(user.id, "delete", t("confirmDelete"))}
+                            onClick={() =>
+                              setPendingConfirm({ userId: user.id, email: user.email, action: "delete" })
+                            }
                             className="rounded-xl border border-rose-400/30 bg-rose-500/10 px-3 py-2 text-xs font-semibold text-rose-300 disabled:opacity-50"
                           >
                             {t("delete")}
@@ -343,6 +344,45 @@ export default function AdminUsersPage() {
           </div>
         )}
       </main>
+
+      {pendingConfirm ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+          <div className="card-surface w-full max-w-md rounded-3xl p-6">
+            <h2 className="text-lg font-bold text-white">{t("confirmTitle")}</h2>
+            <p className="mt-3 text-sm leading-relaxed text-slate-300">
+              {pendingConfirm.action === "reupload"
+                ? t("confirmRequestId", { email: pendingConfirm.email })
+                : pendingConfirm.action === "block"
+                  ? t("confirmBlock", { email: pendingConfirm.email })
+                  : t("confirmDelete", { email: pendingConfirm.email })}
+            </p>
+            <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={() => setPendingConfirm(null)}
+                className="rounded-xl border border-white/15 px-4 py-2.5 text-sm font-medium text-slate-200"
+              >
+                {t("confirmCancel")}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const current = pendingConfirm;
+                  setPendingConfirm(null);
+                  if (current.action === "reupload") {
+                    void requestIdReupload(current.userId);
+                  } else {
+                    void runAction(current.userId, current.action);
+                  }
+                }}
+                className="rounded-xl bg-rose-500 px-4 py-2.5 text-sm font-semibold text-white"
+              >
+                {t("confirmProceed")}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {previewUser ? (
         <IdPreviewModal

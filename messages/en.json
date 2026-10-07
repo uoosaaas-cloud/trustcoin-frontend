@@ -763,7 +763,7 @@
       "approve": "Approve Account",
       "block": "Block User",
       "delete": "Delete User",
-      "confirmDelete": "Permanently delete this user and related data? This cannot be undone.",
+      "confirmDelete": "Permanently delete {email} and their data? This cannot be undone.",
       "activePackagesTitle": "Active packages",
       "noPackages": "No active investment packages.",
       "messages": {
@@ -782,7 +782,11 @@
         "daily": "Daily %",
         "end": "Ends"
       },
-      "reactivate": "Reactivate account"
+      "reactivate": "Reactivate account",
+      "confirmTitle": "Confirm this action",
+      "confirmProceed": "Confirm",
+      "confirmCancel": "Cancel",
+      "confirmBlock": "Block and disable {email}? They cannot sign in until you reactivate the account. The balance stays saved."
     },
     "referrals": {
       "eyebrow": "Growth network",
