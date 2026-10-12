@@ -400,6 +400,39 @@ export async function triggerAdminDepositSweep(payload?: {
   return data;
 }
 
+export interface DepositResumeReport {
+  networkOk: boolean;
+  automaticSweepRestored: boolean;
+  blockedReason: "tron_down" | "master_invalid" | "feee_down" | "feee_low" | null;
+  feeeTrx: number | null;
+  requiredTrx: number | null;
+  masterUsdt: string | null;
+  pausesCleared: number;
+  completed: Array<{
+    email: string;
+    network: string;
+    amount: string;
+    kind: "moved" | "already_on_master";
+    credited: string | null;
+  }>;
+  stillStuck: Array<{
+    email: string;
+    network: string;
+    amount: string;
+    code: "in_progress" | "sweep_failed" | "missing_on_chain" | "network_read";
+    detail: string | null;
+  }>;
+}
+
+export async function resumeAutomaticDeposits() {
+  const { data } = await api.post<ApiSuccessResponse<DepositResumeReport>>(
+    "/admin/deposits/resume-automatic",
+    {},
+    { timeout: 180000 }
+  );
+  return data;
+}
+
 export interface AdminGiftDistributionResult {
   amount: string;
   targeted: number;

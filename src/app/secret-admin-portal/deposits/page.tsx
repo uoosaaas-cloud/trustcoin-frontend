@@ -1,13 +1,15 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { AdminNav } from "@/components/AdminNav";
 import { useRequireAdmin } from "@/hooks/useRequireAdmin";
 import {
   getAdminDepositMonitoring,
+  resumeAutomaticDeposits,
   triggerAdminDepositSweep,
   type AdminDepositMonitoring,
+  type DepositResumeReport,
 } from "@/lib/admin";
 import { getApiErrorMessage } from "@/lib/api";
 import { formatDate, formatUsdt } from "@/lib/format";
@@ -20,9 +22,13 @@ export default function AdminDepositsPage() {
   const [data, setData] = useState<AdminDepositMonitoring | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSweeping, setIsSweeping] = useState(false);
+  const [isResuming, setIsResuming] = useState(false);
+  const [confirmResume, setConfirmResume] = useState(false);
+  const [resumeReport, setResumeReport] = useState<DepositResumeReport | null>(null);
   const [retryingId, setRetryingId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const resumeLock = useRef(false);
 
   async function load() {
     setIsLoading(true);
@@ -41,6 +47,7 @@ export default function AdminDepositsPage() {
     if (!ready) return;
     void load();
     const id = window.setInterval(() => {
+      if (resumeLock.current) return;
       void load();
     }, 10_000);
     return () => window.clearInterval(id);
@@ -65,6 +72,25 @@ export default function AdminDepositsPage() {
       setErrorMessage(getApiErrorMessage(error, tCommon("unknownError")));
     } finally {
       setRetryingId(null);
+    }
+  }
+
+  async function handleResume() {
+    setConfirmResume(false);
+    resumeLock.current = true;
+    setIsResuming(true);
+    setErrorMessage(null);
+    setSuccessMessage(null);
+    setResumeReport(null);
+    try {
+      const response = await resumeAutomaticDeposits();
+      setResumeReport(response.data);
+      await load();
+    } catch (error) {
+      setErrorMessage(getApiErrorMessage(error, tCommon("unknownError")));
+    } finally {
+      resumeLock.current = false;
+      setIsResuming(false);
     }
   }
 
@@ -95,10 +121,18 @@ export default function AdminDepositsPage() {
             <h1 className="mt-2 text-2xl font-bold text-white sm:text-3xl">{t("title")}</h1>
             <p className="mt-2 max-w-3xl text-sm text-slate-400">{t("subtitle")}</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <button
               type="button"
-              disabled={isSweeping}
+              disabled={isResuming || isSweeping}
+              onClick={() => setConfirmResume(true)}
+              className="rounded-xl bg-emerald-600 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"
+            >
+              {isResuming ? t("resuming") : t("resumeAutomatic")}
+            </button>
+            <button
+              type="button"
+              disabled={isSweeping || isResuming}
               onClick={() => void handleSweep(true)}
               className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold text-slate-300 disabled:opacity-50"
             >
@@ -106,7 +140,7 @@ export default function AdminDepositsPage() {
             </button>
             <button
               type="button"
-              disabled={isSweeping}
+              disabled={isSweeping || isResuming}
               onClick={() => void handleSweep(false)}
               className="rounded-xl bg-brand-600 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"
             >
@@ -123,6 +157,31 @@ export default function AdminDepositsPage() {
         {successMessage ? (
           <div className="mb-4 rounded-2xl border border-emerald-400/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-300">
             {successMessage}
+          </div>
+        ) : null}
+        {resumeReport ? <ResumeReport report={resumeReport} /> : null}
+        {confirmResume ? (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 px-4">
+            <div className="card-surface w-full max-w-md rounded-3xl p-5">
+              <h2 className="text-lg font-semibold text-white">{t("resumeTitle")}</h2>
+              <p className="mt-2 text-sm text-slate-300">{t("resumeBody")}</p>
+              <div className="mt-5 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setConfirmResume(false)}
+                  className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold text-slate-300"
+                >
+                  {t("resumeCancel")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void handleResume()}
+                  className="rounded-xl bg-emerald-600 px-3 py-2 text-xs font-semibold text-white"
+                >
+                  {t("resumeConfirm")}
+                </button>
+              </div>
+            </div>
           </div>
         ) : null}
 
@@ -259,6 +318,70 @@ export default function AdminDepositsPage() {
           </div>
         )}
       </main>
+    </div>
+  );
+}
+
+function ResumeReport({ report }: { report: DepositResumeReport }) {
+  const t = useTranslations("admin.deposits");
+  const healthy = report.automaticSweepRestored && report.networkOk && report.stillStuck.length === 0;
+  const headline = !report.automaticSweepRestored
+    ? report.blockedReason === "tron_down"
+      ? t("resumeTronDown")
+      : report.blockedReason === "master_invalid"
+        ? t("resumeMasterInvalid")
+        : report.blockedReason === "feee_down"
+          ? t("resumeFeeeDown")
+          : report.blockedReason === "feee_low"
+            ? t("resumeFeeeLow", {
+                balance: report.feeeTrx ?? "—",
+                required: report.requiredTrx ?? "—",
+              })
+            : t("resumeBlocked")
+    : healthy
+      ? t("resumeOk")
+      : t("resumePartial");
+
+  return (
+    <div
+      className={`mb-4 rounded-2xl border px-4 py-3 text-sm ${
+        healthy
+          ? "border-emerald-400/30 bg-emerald-500/10 text-emerald-200"
+          : "border-amber-400/30 bg-amber-500/10 text-amber-100"
+      }`}
+    >
+      <p className="font-semibold">{headline}</p>
+      {report.automaticSweepRestored ? (
+        <ul className="mt-2 space-y-1 text-xs">
+          {report.feeeTrx !== null ? <li>{t("resumeFeeeBalance", { balance: report.feeeTrx })}</li> : null}
+          {report.masterUsdt ? <li>{t("resumeMasterBalance", { amount: report.masterUsdt })}</li> : null}
+          <li>{t("resumePauses", { count: report.pausesCleared })}</li>
+          {report.completed.map((row) => (
+            <li key={`${row.kind}-${row.email}-${row.amount}-${row.network}`}>
+              {row.kind === "already_on_master"
+                ? t("resumeAlready", { amount: row.amount, email: row.email })
+                : row.credited
+                  ? t("resumeMovedCredited", {
+                      amount: row.amount,
+                      email: row.email,
+                      credited: row.credited,
+                    })
+                  : t("resumeMoved", { amount: row.amount, email: row.email })}
+            </li>
+          ))}
+          {report.stillStuck.map((row) => (
+            <li key={`${row.code}-${row.email}-${row.amount}`}>
+              {row.code === "in_progress"
+                ? t("resumeStuckInProgress", { email: row.email })
+                : row.code === "missing_on_chain"
+                  ? t("resumeStuckMissing", { email: row.email, amount: row.amount })
+                  : row.code === "network_read"
+                    ? t("resumeStuckRead", { email: row.email })
+                    : t("resumeStuckFailed", { email: row.email, amount: row.amount })}
+            </li>
+          ))}
+        </ul>
+      ) : null}
     </div>
   );
 }
